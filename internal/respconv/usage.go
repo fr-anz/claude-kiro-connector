@@ -1,11 +1,31 @@
 package respconv
 
-// estimatedOutputTokens returns an approximate output token count from accumulated text.
-// Uses the incrementally tracked rune count with a heuristic of ~4 runes per token.
+import (
+	"strings"
+
+	"github.com/fr-anz/claudecode-kiro/internal/tokencount"
+)
+
+// estimatedOutputTokens returns an output token count for responses where
+// Kiro sent no usage metadata. It tokenizes the accumulated text, thinking,
+// and tool input; if the tokenizer is unavailable it falls back to the
+// incrementally tracked ~4 runes per token heuristic.
 // Returns at least 1 for non-empty output to avoid reporting 0 tokens for short responses.
 func (a *responseAccumulator) estimatedOutputTokens() int {
 	if a.outputRuneCount == 0 {
 		return 0
+	}
+	var sb strings.Builder
+	sb.WriteString(a.TextBuf.String())
+	sb.WriteString(a.ThinkingBuf.String())
+	for _, tc := range a.ToolCalls {
+		sb.WriteString(tc.Name)
+		sb.WriteString(tc.Input)
+	}
+	if sb.Len() > 0 {
+		if n, err := tokencount.CountBytes([]byte(sb.String())); err == nil && n > 0 {
+			return n
+		}
 	}
 	return max(1, a.outputRuneCount/4)
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/fr-anz/claudecode-kiro/internal/models"
 	"github.com/fr-anz/claudecode-kiro/internal/reqconv"
 	"github.com/fr-anz/claudecode-kiro/internal/toolsearch"
+	"github.com/google/uuid"
 )
 
 const headerCCSessionID = "X-Claude-Code-Session-Id"
@@ -31,8 +32,9 @@ func (s *Service) HandleMessages(w http.ResponseWriter, r *http.Request) {
 
 	ccSessionID := r.Header.Get(headerCCSessionID)
 	if ccSessionID == "" {
-		httpx.WriteError(w, http.StatusBadRequest, errTypeInvalidRequest, "missing "+headerCCSessionID+" header")
-		return
+		// Non-Claude-Code clients (Agent SDK, raw API) omit the header. A
+		// fresh ID gives Kiro a valid, unshared conversation for this call.
+		ccSessionID = uuid.NewString()
 	}
 	ctx = logging.WithSessionID(ctx, ccSessionID)
 	r = r.WithContext(ctx)

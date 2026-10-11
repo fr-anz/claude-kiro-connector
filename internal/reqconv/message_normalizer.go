@@ -115,6 +115,8 @@ func extractToolResultContentText(b anthropic.ContentBlock) string {
 		switch {
 		case cb.Type == anthropic.BlockTypeText:
 			parts = append(parts, cb.Text)
+		case cb.Type == anthropic.BlockTypeDocument:
+			parts = append(parts, documentText(cb))
 		case cb.Type == anthropic.BlockTypeToolSearchSearchResult || len(cb.ToolReferences) > 0:
 			// Preserve tool_references from tool_search_tool_result content.
 			for _, ref := range cb.ToolReferences {

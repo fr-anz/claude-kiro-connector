@@ -15,6 +15,7 @@ type Request struct {
 	Messages      []Message       `json:"messages"`
 	System        SystemPrompt    `json:"system"`
 	Tools         []Tool          `json:"tools,omitempty"`
+	ToolChoice    *ToolChoice     `json:"tool_choice,omitempty"`
 	MaxTokens     int             `json:"max_tokens"`
 	StopSequences []string        `json:"stop_sequences,omitempty"`
 	Stream        bool            `json:"stream"`
@@ -25,6 +26,12 @@ type Request struct {
 // OutputConfig represents the output_config field in the Anthropic API.
 type OutputConfig struct {
 	Effort string `json:"effort,omitempty"`
+}
+
+// ToolChoice represents the tool_choice field: type is auto, any, tool, or none.
+type ToolChoice struct {
+	Type string `json:"type"`
+	Name string `json:"name,omitempty"`
 }
 
 // ThinkingConfig represents the thinking configuration in the Anthropic API.
@@ -138,8 +145,11 @@ type ContentBlock struct {
 	Content   MessageContent `json:"content"`
 	IsError   bool           `json:"is_error,omitzero"`
 
-	// image block
+	// image / document block
 	Source *ImageSource `json:"source,omitempty"`
+	// document block metadata
+	Title   string `json:"title,omitempty"`
+	Context string `json:"context,omitempty"`
 
 	// tool_reference block
 	ToolName string `json:"tool_name,omitempty"`
@@ -161,11 +171,15 @@ func (b ContentBlock) IsToolResult() bool {
 	return b.Type == BlockTypeToolResult || b.Type == BlockTypeToolSearchToolResult
 }
 
-// ImageSource represents the source of an image content block.
+// ImageSource represents the source of an image or document content block.
+// Document sources may also be type "text" (Data holds plain text) or
+// "content" (Content holds nested text/image blocks).
 type ImageSource struct {
-	Type      string `json:"type"`
-	MediaType string `json:"media_type"`
-	Data      string `json:"data"`
+	Type      string         `json:"type"`
+	MediaType string         `json:"media_type,omitempty"`
+	Data      string         `json:"data,omitempty"`
+	URL       string         `json:"url,omitempty"`
+	Content   MessageContent `json:"content,omitzero"`
 }
 
 // CacheControl represents cache control settings for prompt caching.
@@ -185,6 +199,7 @@ const (
 	BlockTypeText                   = "text"
 	BlockTypeThinking               = "thinking"
 	BlockTypeImage                  = "image"
+	BlockTypeDocument               = "document"
 	BlockTypeToolUse                = "tool_use"
 	BlockTypeServerToolUse          = "server_tool_use"
 	BlockTypeToolResult             = "tool_result"

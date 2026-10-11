@@ -74,6 +74,12 @@ func BuildPayload(req *anthropic.Request, options BuildOptions) (*kiroproto.Payl
 // buildSystemAndTools extracts the system prompt and converts tools.
 func buildSystemAndTools(req *anthropic.Request, tsCtx *toolsearch.Context, nameMap *ToolNameMap) (string, []kiroproto.ToolEntry) {
 	systemPrompt := ExtractSystemPrompt(req.System)
+	if instruction := toolChoiceInstruction(req.ToolChoice); instruction != "" && len(req.Tools) > 0 {
+		if systemPrompt != "" {
+			systemPrompt += "\n\n"
+		}
+		systemPrompt += instruction
+	}
 
 	var toolEntries []kiroproto.ToolEntry
 	if tsCtx != nil {
@@ -86,6 +92,25 @@ func buildSystemAndTools(req *anthropic.Request, tsCtx *toolsearch.Context, name
 		toolEntries = ApplyToolCachePoints(req.Tools, toolEntries)
 	}
 	return systemPrompt, toolEntries
+}
+
+// toolChoiceInstruction emulates Anthropic tool_choice, which Kiro has no
+// field for, as a system-prompt directive. "auto" (the default) adds nothing.
+func toolChoiceInstruction(tc *anthropic.ToolChoice) string {
+	if tc == nil {
+		return ""
+	}
+	switch tc.Type {
+	case "any":
+		return "<tool_choice>You must respond by calling one of the available tools. Do not reply with text only.</tool_choice>"
+	case "tool":
+		if tc.Name != "" {
+			return "<tool_choice>You must respond by calling the `" + tc.Name + "` tool. Do not call any other tool and do not reply with text only.</tool_choice>"
+		}
+	case "none":
+		return "<tool_choice>Do not call any tools in this response. Reply with text only.</tool_choice>"
+	}
+	return ""
 }
 
 // splitMessages splits normalized messages into history messages and the last message.
