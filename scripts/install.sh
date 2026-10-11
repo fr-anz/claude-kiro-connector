@@ -136,7 +136,7 @@ cat > "$launcher_path" <<LAUNCHER
 #!/usr/bin/env bash
 set -euo pipefail
 
-claude-kiro_bin="\${CLAUDE_KIRO_BIN:-$install_root/bin/claude-kiro-native-websearch}"
+gateway_bin="\${CLAUDE_KIRO_BIN:-$install_root/bin/claude-kiro-native-websearch}"
 runtime_bin="\${CLAUDE_KIRO_RUNTIME_BIN:-$official_claude_real}"
 config_dir="\${CLAUDE_KIRO_CONFIG_DIR:-$state_root/claude-config}"
 gateway_port="\${CLAUDE_KIRO_PORT:-$gateway_port}"
@@ -211,7 +211,7 @@ fi
 
 if [[ "\$gateway_is_healthy" != true ]]; then
   prepare_local_kiro_credentials
-  "\$claude-kiro_bin" -port "\$gateway_port" >"\$log_file" 2>&1 &
+  "\$gateway_bin" -port "\$gateway_port" >"\$log_file" 2>&1 &
   started_pid=\$!
   ready=false
   for _attempt in {1..50}; do
