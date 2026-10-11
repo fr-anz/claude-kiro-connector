@@ -15,7 +15,7 @@ import (
 )
 
 // ServiceName is the OTel service name used for resource and tracer identification.
-const ServiceName = "kirocc"
+const ServiceName = "claude-kiro"
 
 // Init initializes the OTel TracerProvider with an OTLP HTTP exporter.
 // The OTLP endpoint is configured via the standard OTEL_EXPORTER_OTLP_ENDPOINT

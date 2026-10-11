@@ -11,11 +11,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/d-kuro/kirocc/internal/auth"
-	"github.com/d-kuro/kirocc/internal/kiroclient"
-	"github.com/d-kuro/kirocc/internal/kiroproto"
-	"github.com/d-kuro/kirocc/internal/logging"
-	tu "github.com/d-kuro/kirocc/internal/testutil"
+	"github.com/fr-anz/claudecode-kiro/internal/auth"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claudecode-kiro/internal/logging"
+	tu "github.com/fr-anz/claudecode-kiro/internal/testutil"
 )
 
 // newTCP4TestServer creates an httptest.Server bound to tcp4 to avoid IPv6 bind failures in sandboxed environments.

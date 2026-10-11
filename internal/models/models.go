@@ -99,10 +99,10 @@ var envCache struct {
 	parsed []Mapping
 }
 
-// envMappings parses KIROCC_MODEL_MAPPINGS env var and returns the overrides.
+// envMappings parses CLAUDE_KIRO_MODEL_MAPPINGS env var and returns the overrides.
 // Results are cached and only re-parsed when the env var value changes.
 func envMappings() []Mapping {
-	raw := os.Getenv("KIROCC_MODEL_MAPPINGS")
+	raw := os.Getenv("CLAUDE_KIRO_MODEL_MAPPINGS")
 
 	envCache.mu.Lock()
 	defer envCache.mu.Unlock()
@@ -119,7 +119,7 @@ func envMappings() []Mapping {
 	}
 	var mappings []Mapping
 	if err := json.Unmarshal([]byte(raw), &mappings); err != nil {
-		slog.Warn("KIROCC_MODEL_MAPPINGS: invalid JSON, ignoring", "err", err)
+		slog.Warn("CLAUDE_KIRO_MODEL_MAPPINGS: invalid JSON, ignoring", "err", err)
 		envCache.parsed = nil
 		return nil
 	}
@@ -158,7 +158,7 @@ func effectiveMappings() []Mapping {
 // `mR()` / `A2()` picks the 1M window even if the input was bare.
 //
 // Upstream `kiroModel` is never `[1m]`-suffixed — it always comes from
-// mapping tables. KIROCC_MODEL_MAPPINGS env var can override mappings.
+// mapping tables. CLAUDE_KIRO_MODEL_MAPPINGS env var can override mappings.
 func Resolve(model string, context1M bool) (kiroModel string, thinking bool, contextWindowSize int, anthropicModel string) {
 	model = stripDateSuffix(normalizeThinkingSuffix(model))
 	var matchedWindowSize int

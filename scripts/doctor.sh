@@ -4,10 +4,10 @@ set -uo pipefail
 install_root="${CLAUDE_KIRO_INSTALL_ROOT:-$HOME/.local/share/claude-kiro}"
 state_root="${CLAUDE_KIRO_STATE_ROOT:-$HOME/.claude-kiro}"
 user_bin_dir="${CLAUDE_KIRO_BIN_DIR:-$HOME/.local/bin}"
-gateway_port="${KIROCC_PORT:-3457}"
-gateway_url="${KIROCC_URL:-http://127.0.0.1:${gateway_port}}"
-if [[ -n "${KIROCC_URL:-}" ]]; then
-  gateway_url_label='<custom KIROCC_URL; value redacted>'
+gateway_port="${CLAUDE_KIRO_PORT:-3457}"
+gateway_url="${CLAUDE_KIRO_URL:-http://127.0.0.1:${gateway_port}}"
+if [[ -n "${CLAUDE_KIRO_URL:-}" ]]; then
+  gateway_url_label='<custom CLAUDE_KIRO_URL; value redacted>'
 else
   gateway_url_label="$gateway_url"
 fi
@@ -114,7 +114,7 @@ if [[ -n "$official_claude" && -n "$isolated_launcher" ]]; then
   esac
 fi
 
-check_executable "$install_root/bin/kirocc-native-websearch"
+check_executable "$install_root/bin/claude-kiro-native-websearch"
 check_file "$state_root/claude-config/settings.json"
 check_file "$state_root/claude-config/CLAUDE.md"
 
@@ -140,7 +140,7 @@ else
     Linux) default_db="$HOME/.local/share/kiro-cli/data.sqlite3" ;;
     *) default_db="" ;;
   esac
-  kiro_db="${KIROCC_DB_PATH:-$default_db}"
+  kiro_db="${CLAUDE_KIRO_DB_PATH:-$default_db}"
   if [[ -n "$kiro_db" && -f "$kiro_db" ]]; then
     pass "Kiro CLI database found: $kiro_db"
     if command -v kiro-cli >/dev/null 2>&1; then
@@ -161,16 +161,16 @@ else
       warn 'install Kiro CLI and log in, or set KIRO_API_KEY and KIRO_API_REGION'
     fi
   else
-    warn 'no default Kiro CLI database path for this OS; use KIROCC_DB_PATH or KIRO_API_KEY'
+    warn 'no default Kiro CLI database path for this OS; use CLAUDE_KIRO_DB_PATH or KIRO_API_KEY'
   fi
 fi
 
 case "$gateway_port" in
-  ''|*[!0-9]*) fail 'KIROCC_PORT must be numeric' ;;
+  ''|*[!0-9]*) fail 'CLAUDE_KIRO_PORT must be numeric' ;;
   *)
     gateway_port_number=$((10#$gateway_port))
     if ((gateway_port_number < 1 || gateway_port_number > 65535)); then
-      fail 'KIROCC_PORT must be between 1 and 65535'
+      fail 'CLAUDE_KIRO_PORT must be between 1 and 65535'
     else
       pass "gateway port is valid: $gateway_port"
     fi

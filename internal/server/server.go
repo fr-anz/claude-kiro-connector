@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	messagesapp "github.com/d-kuro/kirocc/internal/app/messages"
-	"github.com/d-kuro/kirocc/internal/kiroclient"
-	"github.com/d-kuro/kirocc/internal/tracing"
+	messagesapp "github.com/fr-anz/claudecode-kiro/internal/app/messages"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
+	"github.com/fr-anz/claudecode-kiro/internal/tracing"
 )
 
 // ServerOption configures a Server.
@@ -31,7 +31,7 @@ func WithKeepAliveInterval(interval time.Duration) ServerOption {
 	return func(s *Server) { s.keepAliveInterval = interval }
 }
 
-// Server is the HTTP server for the kirocc proxy.
+// Server is the HTTP server for the claude-kiro proxy.
 type Server struct {
 	apiKey            string
 	otel              bool

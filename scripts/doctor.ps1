@@ -55,19 +55,19 @@ $StateRoot = if ($env:CLAUDE_KIRO_STATE_ROOT) {
 }
 $RuntimeCommand = if ($launcherConfig) { [string]$launcherConfig.runtimeCommand } else { "" }
 
-$GatewayPortText = if ($env:KIROCC_PORT) {
-    $env:KIROCC_PORT
+$GatewayPortText = if ($env:CLAUDE_KIRO_PORT) {
+    $env:CLAUDE_KIRO_PORT
 } elseif ($launcherConfig) {
     [string]$launcherConfig.defaultPort
 } else {
     "3457"
 }
-$GatewayUrl = if ($env:KIROCC_URL) {
-    $env:KIROCC_URL.TrimEnd('/')
+$GatewayUrl = if ($env:CLAUDE_KIRO_URL) {
+    $env:CLAUDE_KIRO_URL.TrimEnd('/')
 } else {
     "http://127.0.0.1:$GatewayPortText"
 }
-$GatewayUrlLabel = if ($env:KIROCC_URL) { "<custom KIROCC_URL; value redacted>" } else { $GatewayUrl }
+$GatewayUrlLabel = if ($env:CLAUDE_KIRO_URL) { "<custom CLAUDE_KIRO_URL; value redacted>" } else { $GatewayUrl }
 
 $passCount = 0
 $warnCount = 0
@@ -127,7 +127,7 @@ if ($officialClaude -and $isolatedLauncher) {
     }
 }
 
-Test-RequiredFile (Join-Path $InstallRoot "bin\kirocc-native-websearch.exe")
+Test-RequiredFile (Join-Path $InstallRoot "bin\claude-kiro-native-websearch.exe")
 Test-RequiredFile (Join-Path $UserBinDir "claude-kiro.cmd")
 Test-RequiredFile (Join-Path $UserBinDir "claude-kiro.ps1")
 Test-RequiredFile (Join-Path $UserBinDir "ck.cmd")
@@ -158,8 +158,8 @@ if ($env:KIRO_API_KEY) {
     if ($env:KIRO_API_REGION) { Write-Pass "Kiro API region is set" }
     else { Write-WarningResult "KIRO_API_REGION is unset; gateway will default to us-east-1" }
 } else {
-    $databaseCandidates = if ($env:KIROCC_DB_PATH) {
-        @($env:KIROCC_DB_PATH)
+    $databaseCandidates = if ($env:CLAUDE_KIRO_DB_PATH) {
+        @($env:CLAUDE_KIRO_DB_PATH)
     } else {
         @(
             (Join-Path $env:USERPROFILE ".local\share\kiro-cli\data.sqlite3"),
@@ -185,7 +185,7 @@ if ($env:KIRO_API_KEY) {
             Write-WarningResult "Kiro CLI command is missing; the gateway can use the existing database, but login repair requires Kiro CLI"
         }
     } else {
-        Write-Failure "Kiro CLI database not found; set KIROCC_DB_PATH or KIRO_API_KEY"
+        Write-Failure "Kiro CLI database not found; set CLAUDE_KIRO_DB_PATH or KIRO_API_KEY"
         if (Get-Command kiro-cli -ErrorAction SilentlyContinue) {
             Write-WarningResult "run kiro-cli login, then kiro-cli whoami to create a usable login database"
         } else {
@@ -196,7 +196,7 @@ if ($env:KIRO_API_KEY) {
 
 $GatewayPort = 0
 if (-not [int]::TryParse($GatewayPortText, [ref]$GatewayPort) -or $GatewayPort -lt 1 -or $GatewayPort -gt 65535) {
-    Write-Failure "KIROCC_PORT must be between 1 and 65535"
+    Write-Failure "CLAUDE_KIRO_PORT must be between 1 and 65535"
 } else {
     Write-Pass "gateway port is valid: $GatewayPort"
 }

@@ -7,13 +7,13 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/d-kuro/kirocc/internal/anthropic"
-	"github.com/d-kuro/kirocc/internal/auth"
-	"github.com/d-kuro/kirocc/internal/httpx"
-	"github.com/d-kuro/kirocc/internal/logging"
-	"github.com/d-kuro/kirocc/internal/models"
-	"github.com/d-kuro/kirocc/internal/reqconv"
-	"github.com/d-kuro/kirocc/internal/toolsearch"
+	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
+	"github.com/fr-anz/claudecode-kiro/internal/auth"
+	"github.com/fr-anz/claudecode-kiro/internal/httpx"
+	"github.com/fr-anz/claudecode-kiro/internal/logging"
+	"github.com/fr-anz/claudecode-kiro/internal/models"
+	"github.com/fr-anz/claudecode-kiro/internal/reqconv"
+	"github.com/fr-anz/claudecode-kiro/internal/toolsearch"
 )
 
 const headerCCSessionID = "X-Claude-Code-Session-Id"

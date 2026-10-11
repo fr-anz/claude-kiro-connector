@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/d-kuro/kirocc/internal/httpx"
-	"github.com/d-kuro/kirocc/internal/models"
+	"github.com/fr-anz/claudecode-kiro/internal/httpx"
+	"github.com/fr-anz/claudecode-kiro/internal/models"
 )
 
 func (s *Server) handleHealth(w http.ResponseWriter, _ *http.Request) {

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/d-kuro/kirocc/internal/kiroproto"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
 )
 
 func TestSSEWriter_TextOnly(t *testing.T) {

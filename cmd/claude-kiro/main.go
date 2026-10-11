@@ -14,13 +14,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/d-kuro/kirocc/internal/auth"
-	"github.com/d-kuro/kirocc/internal/config"
-	"github.com/d-kuro/kirocc/internal/kiroclient"
-	"github.com/d-kuro/kirocc/internal/logging"
-	"github.com/d-kuro/kirocc/internal/server"
-	"github.com/d-kuro/kirocc/internal/tokencount"
-	"github.com/d-kuro/kirocc/internal/tracing"
+	"github.com/fr-anz/claudecode-kiro/internal/auth"
+	"github.com/fr-anz/claudecode-kiro/internal/config"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
+	"github.com/fr-anz/claudecode-kiro/internal/logging"
+	"github.com/fr-anz/claudecode-kiro/internal/server"
+	"github.com/fr-anz/claudecode-kiro/internal/tokencount"
+	"github.com/fr-anz/claudecode-kiro/internal/tracing"
 )
 
 func main() {
@@ -82,7 +82,7 @@ func run(ctx context.Context, args []string) error {
 		slog.Warn("server is binding to a non-loopback address without an API key — all endpoints are unauthenticated",
 			"host", cfg.Host)
 	}
-	slog.Info("kirocc listening", "addr", "http://"+addr)
+	slog.Info("claude-kiro listening", "addr", "http://"+addr)
 	slog.Info("set ANTHROPIC_BASE_URL to use with Claude Code", "url", "http://"+addr)
 
 	httpSrv := &http.Server{
@@ -105,7 +105,7 @@ func run(ctx context.Context, args []string) error {
 }
 
 func parseFlags(args []string) (config.Config, error) {
-	fs := flag.NewFlagSet("kirocc", flag.ContinueOnError)
+	fs := flag.NewFlagSet("claude-kiro", flag.ContinueOnError)
 	var cfg config.Config
 	fs.IntVar(&cfg.Port, "port", 3456, "listen port")
 	fs.StringVar(&cfg.Host, "host", "127.0.0.1", "bind host")

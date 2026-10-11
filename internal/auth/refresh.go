@@ -28,7 +28,7 @@ func WithHTTPClient(c *http.Client) Option {
 // WithAPIKey configures a Kiro API key ("ksk_…", normally from KIRO_API_KEY) as
 // the credential source. Such a key is long-lived and presented directly to the
 // API, so the SQLite database is never opened and no refresh ever happens —
-// which is what lets kirocc run with no Kiro CLI login, in CI or a container.
+// which is what lets claude-kiro run with no Kiro CLI login, in CI or a container.
 // An empty key is ignored, leaving the database path in effect.
 func WithAPIKey(key, region string) Option {
 	return func(m *AuthManager) {

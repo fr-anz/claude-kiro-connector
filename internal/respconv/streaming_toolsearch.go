@@ -3,8 +3,8 @@ package respconv
 // Modified by ClaudeCode Kiro to emit native WebSearch SSE blocks.
 
 import (
-	"github.com/d-kuro/kirocc/internal/anthropic"
-	"github.com/d-kuro/kirocc/internal/toolsearch"
+	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
+	"github.com/fr-anz/claudecode-kiro/internal/toolsearch"
 )
 
 // WriteServerToolUse writes a server_tool_use content block start + input delta + stop.

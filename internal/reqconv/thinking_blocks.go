@@ -1,8 +1,8 @@
 package reqconv
 
 import (
-	"github.com/d-kuro/kirocc/internal/anthropic"
-	"github.com/d-kuro/kirocc/internal/kiroproto"
+	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
 	"github.com/google/uuid"
 )
 

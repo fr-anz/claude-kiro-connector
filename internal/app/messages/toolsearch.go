@@ -9,14 +9,14 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/d-kuro/kirocc/internal/anthropic"
-	"github.com/d-kuro/kirocc/internal/auth"
-	"github.com/d-kuro/kirocc/internal/httpx"
-	"github.com/d-kuro/kirocc/internal/kiroproto"
-	"github.com/d-kuro/kirocc/internal/logging"
-	"github.com/d-kuro/kirocc/internal/reqconv"
-	"github.com/d-kuro/kirocc/internal/respconv"
-	"github.com/d-kuro/kirocc/internal/toolsearch"
+	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
+	"github.com/fr-anz/claudecode-kiro/internal/auth"
+	"github.com/fr-anz/claudecode-kiro/internal/httpx"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claudecode-kiro/internal/logging"
+	"github.com/fr-anz/claudecode-kiro/internal/reqconv"
+	"github.com/fr-anz/claudecode-kiro/internal/respconv"
+	"github.com/fr-anz/claudecode-kiro/internal/toolsearch"
 	"github.com/google/uuid"
 )
 

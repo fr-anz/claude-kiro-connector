@@ -1,17 +1,21 @@
 ---
-name: release-kirocc
-description: "Guide the kirocc release process step by step: create release branch, write release notes, open PR, tag, and sync GitHub Release. Use this skill whenever the user wants to release a new version, cut a release, create a tag, bump version, or says /release-kirocc. Takes a version argument like /release-kirocc v0.1.0."
+name: release-claude-kiro
+description: "Guide the claude-kiro release process step by step: create release branch, write release notes, open PR, tag, and sync GitHub Release. Use this skill whenever the user wants to release a new version, cut a release, create a tag, bump version, or says /release-claude-kiro. Takes a version argument like /release-claude-kiro v0.7.0."
 disable-model-invocation: true
 ---
 
 # Release
 
-Automate the kirocc release process. Takes a version argument (e.g., `/release-kirocc v0.1.0`).
+Automate the claude-kiro release process. Takes a version argument (e.g., `/release-claude-kiro v0.7.0`).
+
+See `docs/RELEASING.md` for the authoritative process. Tag scheme is plain
+semver (`vX.Y.Z`); the next release must sort after every inherited tag, so
+start at `v0.7.0`. Never republish inherited tags. Do not use `git push --tags`.
 
 ## Prerequisites
 
 - `gh` CLI installed and authenticated
-- Write access to `d-kuro/kirocc`
+- Write access to `fr-anz/claudecode-kiro`
 
 ## Release Flow
 
@@ -65,7 +69,7 @@ Exclude the maintainer and bots:
 ```bash
 gh pr list --state merged --search "merged:>$SINCE" \
   --json number,title,author \
-  --jq '.[] | select(.author.login != "d-kuro" and (.author.login | test("\\[bot\\]$") | not)) | "- @\(.author.login) (#\(.number))"'
+  --jq '.[] | select(.author.login != "fr-anz" and (.author.login | test("\\[bot\\]$") | not)) | "- @\(.author.login) (#\(.number))"'
 ```
 
 If no external contributors, omit the Contributors section from the release notes.
@@ -105,19 +109,15 @@ Description of the feature.
 
 ## Upgrade Instructions
 
-### Homebrew
+Clone the source and reinstall; release archives contain only the
+standalone gateway, never the managed `claude-kiro` installation:
 
-\`\`\`bash
-brew upgrade kirocc
-\`\`\`
+```bash
+git pull --ff-only origin main
+./scripts/install.sh   # or .\scripts\install.ps1 on Windows
+```
 
-### go install
-
-\`\`\`bash
-go install github.com/d-kuro/kirocc/cmd/kirocc@<version>
-\`\`\`
-
-**Full Changelog**: https://github.com/d-kuro/kirocc/compare/<prev-version>...<version>
+**Full Changelog**: https://github.com/fr-anz/claudecode-kiro/compare/<prev-version>...<version>
 ```
 
 After writing, show the draft to the user and ask for edits before proceeding.
@@ -141,13 +141,15 @@ EOF
 )"
 ```
 
-Tell the user: "PR created. Please merge it once CI passes. After merging, run `/release-kirocc <version>` again or ask me to proceed with Phase 2."
+Tell the user: "PR created. Please merge it once CI passes. After merging, run `/release-claude-kiro <version>` again or ask me to proceed with Phase 2."
 
 ### Phase 2: Tag and Publish
 
 This phase runs after the PR is merged. If the user re-invokes the skill with the same version and the PR is already merged, proceed directly here.
 
 #### Step 7 — Create and push tag
+
+Push only the single new tag, never `--tags`:
 
 ```bash
 git checkout main
@@ -158,7 +160,7 @@ git push origin <version>
 
 Tell the user: "Tag pushed. The GitHub Actions Release workflow will automatically build and publish the release."
 
-Provide a link to monitor: `https://github.com/d-kuro/kirocc/actions/workflows/release.yml`
+Provide a link to monitor: `https://github.com/fr-anz/claudecode-kiro/actions/workflows/release.yml`
 
 #### Step 8 — Monitor workflow and sync notes
 
@@ -168,7 +170,7 @@ After pushing the tag, use `CronCreate` to poll the release workflow every 2 min
 CronCreate(
   cron: "*/2 * * * *",
   recurring: true,
-  prompt: "Check the kirocc release workflow status by running: gh run list --workflow=release.yml --limit 1 --json status,conclusion,databaseId. If the latest run's status is 'completed', delete this cron job with CronDelete, then: if conclusion is 'success', proceed to sync release notes and verify (Step 9). If conclusion is 'failure', report the failure to the user with a link to the run."
+  prompt: "Check the claude-kiro release workflow status by running: gh run list --workflow=release.yml --limit 1 --json status,conclusion,databaseId. If the latest run's status is 'completed', delete this cron job with CronDelete, then: if conclusion is 'success', proceed to sync release notes and verify (Step 9). If conclusion is 'failure', report the failure to the user with a link to the run."
 )
 ```
 
@@ -186,9 +188,9 @@ gh release view <version>
 Tell the user the release is complete and provide install instructions:
 
 ```
-brew install d-kuro/tap/kirocc
-# or
-brew upgrade kirocc
+git clone https://github.com/fr-anz/claudecode-kiro.git
+cd claudecode-kiro
+./scripts/install.sh   # or .\scripts\install.ps1 on Windows
 ```
 
 ## Phase Detection

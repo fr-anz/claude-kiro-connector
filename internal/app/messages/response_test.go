@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/d-kuro/kirocc/internal/logging"
+	"github.com/fr-anz/claudecode-kiro/internal/logging"
 )
 
 // captureSlog redirects slog.Default to a buffer-backed OTel handler for the

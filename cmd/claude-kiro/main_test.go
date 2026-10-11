@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/d-kuro/kirocc/internal/config"
+	"github.com/fr-anz/claudecode-kiro/internal/config"
 )
 
 func TestRun_HelpFlagReturnsNoError(t *testing.T) {

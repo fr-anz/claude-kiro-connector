@@ -8,7 +8,7 @@ import (
 func TestWithAPIKey_ShortCircuitsDBAndRefresh(t *testing.T) {
 	// A path that cannot be opened proves the DB is never touched: if GetToken
 	// consulted it, this would fail rather than return the key.
-	m := NewAuthManager("/nonexistent/kirocc-test/data.sqlite3", WithAPIKey("ksk_test", ""))
+	m := NewAuthManager("/nonexistent/claude-kiro-test/data.sqlite3", WithAPIKey("ksk_test", ""))
 
 	if !m.UsesAPIKey() {
 		t.Fatal("UsesAPIKey() = false, want true")
@@ -41,10 +41,10 @@ func TestWithAPIKey_ShortCircuitsDBAndRefresh(t *testing.T) {
 }
 
 // Repeated calls must keep working even though nothing is cached: an API key
-// never expires from kirocc's point of view, so the token-validity buffer that
+// never expires from claude-kiro's point of view, so the token-validity buffer that
 // governs database credentials must not apply to it.
 func TestWithAPIKey_StableAcrossCalls(t *testing.T) {
-	m := NewAuthManager("/nonexistent/kirocc-test/data.sqlite3", WithAPIKey("ksk_test", ""))
+	m := NewAuthManager("/nonexistent/claude-kiro-test/data.sqlite3", WithAPIKey("ksk_test", ""))
 	for i := range 3 {
 		creds, err := m.GetToken(context.Background())
 		if err != nil {
@@ -71,7 +71,7 @@ func TestWithAPIKey_RegionOverride(t *testing.T) {
 // flag unset) leaves the database path in effect rather than half-enabling a
 // credential-less API-key mode.
 func TestWithAPIKey_EmptyKeyIsIgnored(t *testing.T) {
-	m := NewAuthManager("/nonexistent/kirocc-test/data.sqlite3", WithAPIKey("", "us-east-1"))
+	m := NewAuthManager("/nonexistent/claude-kiro-test/data.sqlite3", WithAPIKey("", "us-east-1"))
 	if m.UsesAPIKey() {
 		t.Error("UsesAPIKey() = true for an empty key, want false")
 	}

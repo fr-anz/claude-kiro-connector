@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/d-kuro/kirocc/internal/logging"
+	"github.com/fr-anz/claudecode-kiro/internal/logging"
 )
 
 const (
@@ -19,15 +19,15 @@ const (
 	DefaultKeepAliveInterval = 15 * time.Second
 )
 
-// Config is the runtime configuration for kirocc.
+// Config is the runtime configuration for claude-kiro.
 type Config struct {
 	Port   int
 	Host   string
 	DBPath string
-	APIKey string // guards kirocc's own endpoints; unrelated to KiroAPIKey
+	APIKey string // guards claude-kiro's own endpoints; unrelated to KiroAPIKey
 	// KiroAPIKey is a Kiro API key ("ksk_…") used upstream instead of the
 	// kiro-cli database credential. Named after Kiro's own KIRO_API_KEY rather
-	// than the KIROCC_* convention, since it is Kiro's credential, not kirocc's.
+	// than the CLAUDE_KIRO_* convention, since it is Kiro's credential, not claude-kiro's.
 	KiroAPIKey string
 	// KiroAPIRegion pins Kiro's runtime/MCP endpoint region without changing
 	// the credential's issuer region used for token refresh.
@@ -60,51 +60,51 @@ func DefaultDBPathFor(goos, home string) string {
 	case "windows":
 		// Kiro CLI 2.x keeps its SQLite state under the same user-local
 		// hierarchy on native Windows. The PowerShell launcher also probes
-		// LOCALAPPDATA and APPDATA and sets KIROCC_DB_PATH when needed.
+		// LOCALAPPDATA and APPDATA and sets CLAUDE_KIRO_DB_PATH when needed.
 		return filepath.Join(home, ".local", "share", "kiro-cli", "data.sqlite3")
 	default:
 		return filepath.Join(home, ".local", "share", "kiro-cli", "data.sqlite3")
 	}
 }
 
-// ApplyEnvOverrides mutates cfg using KIROCC_* environment variables.
+// ApplyEnvOverrides mutates cfg using CLAUDE_KIRO_* environment variables.
 func ApplyEnvOverrides(cfg *Config) error {
-	applyString("KIROCC_DB_PATH", &cfg.DBPath)
-	applyString("KIROCC_API_KEY", &cfg.APIKey)
+	applyString("CLAUDE_KIRO_DB_PATH", &cfg.DBPath)
+	applyString("CLAUDE_KIRO_API_KEY", &cfg.APIKey)
 	// Kiro's own variable names, so a machine already set up for headless
-	// kiro-cli needs no kirocc-specific configuration.
+	// kiro-cli needs no claude-kiro-specific configuration.
 	applyString("KIRO_API_KEY", &cfg.KiroAPIKey)
 	applyString("KIRO_API_REGION", &cfg.KiroAPIRegion)
-	applyString("KIROCC_HOST", &cfg.Host)
-	if err := applyInt("KIROCC_PORT", &cfg.Port); err != nil {
+	applyString("CLAUDE_KIRO_HOST", &cfg.Host)
+	if err := applyInt("CLAUDE_KIRO_PORT", &cfg.Port); err != nil {
 		return err
 	}
-	if err := applyBool("KIROCC_DEBUG", &cfg.Debug); err != nil {
+	if err := applyBool("CLAUDE_KIRO_DEBUG", &cfg.Debug); err != nil {
 		return err
 	}
-	if err := applyBool("KIROCC_OTEL", &cfg.OTel); err != nil {
+	if err := applyBool("CLAUDE_KIRO_OTEL", &cfg.OTel); err != nil {
 		return err
 	}
-	if err := applyInt("KIROCC_OTEL_BODY_LIMIT", &cfg.OTelBodyLimit); err != nil {
+	if err := applyInt("CLAUDE_KIRO_OTEL_BODY_LIMIT", &cfg.OTelBodyLimit); err != nil {
 		return err
 	}
-	if err := applyDuration("KIROCC_KEEPALIVE_INTERVAL", &cfg.KeepAliveInterval); err != nil {
+	if err := applyDuration("CLAUDE_KIRO_KEEPALIVE_INTERVAL", &cfg.KeepAliveInterval); err != nil {
 		return err
 	}
-	applyString("KIROCC_LOG_FILE", &cfg.LogFile.Path)
-	if err := applyInt("KIROCC_LOG_MAX_SIZE", &cfg.LogFile.MaxSize); err != nil {
+	applyString("CLAUDE_KIRO_LOG_FILE", &cfg.LogFile.Path)
+	if err := applyInt("CLAUDE_KIRO_LOG_MAX_SIZE", &cfg.LogFile.MaxSize); err != nil {
 		return err
 	}
-	if err := applyInt("KIROCC_LOG_MAX_BACKUPS", &cfg.LogFile.MaxBackups); err != nil {
+	if err := applyInt("CLAUDE_KIRO_LOG_MAX_BACKUPS", &cfg.LogFile.MaxBackups); err != nil {
 		return err
 	}
-	if err := applyInt("KIROCC_LOG_MAX_AGE", &cfg.LogFile.MaxAge); err != nil {
+	if err := applyInt("CLAUDE_KIRO_LOG_MAX_AGE", &cfg.LogFile.MaxAge); err != nil {
 		return err
 	}
-	if err := applyBool("KIROCC_LOG_COMPRESS", &cfg.LogFile.Compress); err != nil {
+	if err := applyBool("CLAUDE_KIRO_LOG_COMPRESS", &cfg.LogFile.Compress); err != nil {
 		return err
 	}
-	if err := applyBool("KIROCC_LOG_CONSOLE", &cfg.LogFile.Console); err != nil {
+	if err := applyBool("CLAUDE_KIRO_LOG_CONSOLE", &cfg.LogFile.Console); err != nil {
 		return err
 	}
 	return nil
