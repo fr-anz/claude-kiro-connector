@@ -558,3 +558,28 @@ func TestPostMessages_UpstreamThrottling_Returns429(t *testing.T) {
 		})
 	}
 }
+
+func TestPostMessages_MissingSessionHeader_GeneratesConversationID(t *testing.T) {
+	var conversationID string
+	client := &mockKiroClient{handler: func(ctx context.Context, token string, payload *kiroproto.Payload, region string) (*kiroclient.Response, error) {
+		conversationID = payload.ConversationState.ConversationID
+		p, _ := json.Marshal(map[string]string{"content": "ok"})
+		return &kiroclient.Response{StatusCode: 200, Body: buildEventStream("assistantResponseEvent", p), Header: http.Header{}}, nil
+	}}
+	srv := newTestServer(t, "", client)
+	defer srv.Close()
+
+	resp, err := http.Post(srv.URL+"/v1/messages", "application/json",
+		strings.NewReader(`{"model":"claude-sonnet-4-6","max_tokens":10,"messages":[{"role":"user","content":"hi"}]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		t.Fatalf("status = %d, want 200; body = %s", resp.StatusCode, body)
+	}
+	if len(conversationID) != 36 {
+		t.Fatalf("conversation ID = %q, want generated UUID", conversationID)
+	}
+}

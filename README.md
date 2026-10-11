@@ -28,6 +28,11 @@ This repository contains two things:
 - Extended thinking, native reasoning effort, and Tool Search emulation
 - Base64 image input across conversation history and tool results (request
   bodies up to 32 MiB)
+- PDF and text `document` blocks (including PDFs returned by the Read tool),
+  converted to text locally because Kiro has no document input; scanned
+  image-only PDFs have no extractable text
+- `tool_choice` (`any`, `tool`, `none`) emulated with a system-prompt
+  directive; Kiro does not enforce it
 - Kiro CLI SQLite credentials with automatic Social/OIDC refresh, or a static
   Kiro API key (`ksk_...`)
 - Retries for upstream throttling, 5xx, and transient stream errors, invisible
@@ -161,7 +166,9 @@ Model names are mapped to Kiro IDs in
   and `529 overloaded_error`, and context overflow as Anthropic's
   `prompt is too long` error so Claude Code retries and auto-compacts. Other
   upstream failures are returned as HTTP 502.
-- `count_tokens` is a local approximation, not Kiro's count.
+- `count_tokens` and usage without Kiro metadata are local tokenizer
+  estimates, not Kiro's count.
+- URL-sourced images and documents are not fetched by the gateway.
 - Model availability, quota, and billing are enforced by Kiro; this gateway does
   not change them.
 
