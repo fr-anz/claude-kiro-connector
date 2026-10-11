@@ -1,0 +1,66 @@
+# If you prefer the allow list template instead of the deny list, see community template:
+# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
+#
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Code coverage profiles and other test artifacts
+*.out
+coverage.*
+*.coverprofile
+profile.cov
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+# env file
+.env
+
+# Editor/IDE
+# .idea/
+# .vscode/
+
+# Build output
+dist/
+
+# Project local directories
+_tmp/
+tmp/
+_docs/
+
+# Local agent context (own-work scratch, not committed)
+.context/
+
+# Debug logs
+debug.log
+
+# Local-only agent/persona overrides (own-work scratch, not committed)
+AGENTS.override.md
+CLAUDE.local.md
+*.local.md
+
+# Local credentials and generated Claude runtime artifacts
+*.sqlite3
+provider.json
+history.jsonl
+cli.cjs
+cli.original.cjs
+cli.original.js
+.claude-kiro/
+.local-runtime/
+
+# Claude Code - allow skills only
+.claude/*
+!.claude/skills/
+!.claude/skills/**
