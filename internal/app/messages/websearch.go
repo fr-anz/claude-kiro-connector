@@ -10,12 +10,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
-	"github.com/fr-anz/claudecode-kiro/internal/auth"
-	"github.com/fr-anz/claudecode-kiro/internal/httpx"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
-	"github.com/fr-anz/claudecode-kiro/internal/respconv"
-	"github.com/fr-anz/claudecode-kiro/internal/tokencount"
+	"github.com/fr-anz/claude-kiro-connector/internal/anthropic"
+	"github.com/fr-anz/claude-kiro-connector/internal/auth"
+	"github.com/fr-anz/claude-kiro-connector/internal/httpx"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroclient"
+	"github.com/fr-anz/claude-kiro-connector/internal/respconv"
+	"github.com/fr-anz/claude-kiro-connector/internal/tokencount"
 )
 
 const webSearchQueryPrefix = "Perform a web search for the query:"

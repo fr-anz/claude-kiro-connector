@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/fr-anz/claudecode-kiro/internal/httpx"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
+	"github.com/fr-anz/claude-kiro-connector/internal/httpx"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroclient"
 )
 
 func TestUpstreamCallError(t *testing.T) {

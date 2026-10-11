@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	messagesapp "github.com/fr-anz/claudecode-kiro/internal/app/messages"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
-	"github.com/fr-anz/claudecode-kiro/internal/tracing"
+	messagesapp "github.com/fr-anz/claude-kiro-connector/internal/app/messages"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroclient"
+	"github.com/fr-anz/claude-kiro-connector/internal/tracing"
 )
 
 // ServerOption configures a Server.

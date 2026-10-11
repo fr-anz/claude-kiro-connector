@@ -3,7 +3,7 @@ package reqconv
 import (
 	"testing"
 
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
 )
 
 func TestParseEnvState(t *testing.T) {
@@ -17,7 +17,7 @@ func TestParseEnvState(t *testing.T) {
 			prompt: "You are Claude Code.\n\n" +
 				"Here is useful information about the environment you are running in:\n" +
 				"<env>\n" +
-				"Working directory: /Users/dev/ghq/github.com/fr-anz/claudecode-kiro\n" +
+				"Working directory: /Users/dev/ghq/github.com/fr-anz/claude-kiro-connector\n" +
 				"Is directory a git repo: Yes\n" +
 				"Platform: darwin\n" +
 				"OS Version: Darwin 25.5.0\n" +
@@ -25,7 +25,7 @@ func TestParseEnvState(t *testing.T) {
 				"</env>\n",
 			want: &kiroproto.EnvState{
 				OperatingSystem:         "macos",
-				CurrentWorkingDirectory: "/Users/dev/ghq/github.com/fr-anz/claudecode-kiro",
+				CurrentWorkingDirectory: "/Users/dev/ghq/github.com/fr-anz/claude-kiro-connector",
 			},
 		},
 		{

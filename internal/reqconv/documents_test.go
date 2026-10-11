@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
+	"github.com/fr-anz/claude-kiro-connector/internal/anthropic"
 )
 
 // minimalPDF builds a one-page PDF whose content stream draws text, with a

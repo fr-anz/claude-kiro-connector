@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fr-anz/claudecode-kiro/internal/logging"
+	"github.com/fr-anz/claude-kiro-connector/internal/logging"
 	"github.com/google/uuid"
 )
 

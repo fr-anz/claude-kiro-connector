@@ -16,9 +16,9 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
-	"github.com/fr-anz/claudecode-kiro/internal/logging"
-	"github.com/fr-anz/claudecode-kiro/internal/tracing"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/logging"
+	"github.com/fr-anz/claude-kiro-connector/internal/tracing"
 	"github.com/google/uuid"
 )
 

@@ -3,8 +3,8 @@ package reqconv
 import (
 	"strings"
 
-	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/anthropic"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
 	"github.com/google/uuid"
 )
 

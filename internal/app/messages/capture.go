@@ -10,8 +10,8 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
-	"github.com/fr-anz/claudecode-kiro/internal/logging"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/logging"
 )
 
 type upstreamCapturedEvent struct {

@@ -15,7 +15,7 @@ start at `v0.7.0`. Never republish inherited tags. Do not use `git push --tags`.
 ## Prerequisites
 
 - `gh` CLI installed and authenticated
-- Write access to `fr-anz/claudecode-kiro`
+- Write access to `fr-anz/claude-kiro-connector`
 
 ## Release Flow
 
@@ -117,7 +117,7 @@ git pull --ff-only origin main
 ./scripts/install.sh   # or .\scripts\install.ps1 on Windows
 ```
 
-**Full Changelog**: https://github.com/fr-anz/claudecode-kiro/compare/<prev-version>...<version>
+**Full Changelog**: https://github.com/fr-anz/claude-kiro-connector/compare/<prev-version>...<version>
 ```
 
 After writing, show the draft to the user and ask for edits before proceeding.
@@ -160,7 +160,7 @@ git push origin <version>
 
 Tell the user: "Tag pushed. The GitHub Actions Release workflow will automatically build and publish the release."
 
-Provide a link to monitor: `https://github.com/fr-anz/claudecode-kiro/actions/workflows/release.yml`
+Provide a link to monitor: `https://github.com/fr-anz/claude-kiro-connector/actions/workflows/release.yml`
 
 #### Step 8 — Monitor workflow and sync notes
 
@@ -188,8 +188,8 @@ gh release view <version>
 Tell the user the release is complete and provide install instructions:
 
 ```
-git clone https://github.com/fr-anz/claudecode-kiro.git
-cd claudecode-kiro
+git clone https://github.com/fr-anz/claude-kiro-connector.git
+cd claude-kiro-connector
 ./scripts/install.sh   # or .\scripts\install.ps1 on Windows
 ```
 

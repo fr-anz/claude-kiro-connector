@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fr-anz/claudecode-kiro/internal/auth"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/auth"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroclient"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
 )
 
 // errorClient always returns an error from GenerateAssistantResponse.

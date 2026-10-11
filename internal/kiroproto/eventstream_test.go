@@ -11,7 +11,7 @@ import (
 	"io"
 	"testing"
 
-	tu "github.com/fr-anz/claudecode-kiro/internal/testutil"
+	tu "github.com/fr-anz/claude-kiro-connector/internal/testutil"
 )
 
 // crc32Test is the CRC-32 (IEEE) table for test frame building.

@@ -14,13 +14,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/fr-anz/claudecode-kiro/internal/auth"
-	"github.com/fr-anz/claudecode-kiro/internal/config"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
-	"github.com/fr-anz/claudecode-kiro/internal/logging"
-	"github.com/fr-anz/claudecode-kiro/internal/server"
-	"github.com/fr-anz/claudecode-kiro/internal/tokencount"
-	"github.com/fr-anz/claudecode-kiro/internal/tracing"
+	"github.com/fr-anz/claude-kiro-connector/internal/auth"
+	"github.com/fr-anz/claude-kiro-connector/internal/config"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroclient"
+	"github.com/fr-anz/claude-kiro-connector/internal/logging"
+	"github.com/fr-anz/claude-kiro-connector/internal/server"
+	"github.com/fr-anz/claude-kiro-connector/internal/tokencount"
+	"github.com/fr-anz/claude-kiro-connector/internal/tracing"
 )
 
 func main() {

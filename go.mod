@@ -1,9 +1,10 @@
-module github.com/fr-anz/claudecode-kiro
+module github.com/fr-anz/claude-kiro-connector
 
 go 1.26.1
 
 require (
 	github.com/google/uuid v1.6.0
+	github.com/ledongthuc/pdf v0.0.0-20260907135840-6c8c28e0e8a0
 	github.com/lmittmann/tint v1.1.3
 	github.com/pkoukk/tiktoken-go v0.1.8
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.69.0
@@ -25,7 +26,6 @@ require (
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0 // indirect
-	github.com/ledongthuc/pdf v0.0.0-20260907135840-6c8c28e0e8a0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
