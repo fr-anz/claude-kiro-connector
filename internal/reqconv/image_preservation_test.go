@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/anthropic"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
 )
 
 func imageFixture(t *testing.T, c color.NRGBA) anthropic.ContentBlock {

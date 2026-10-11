@@ -7,13 +7,13 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
-	"github.com/fr-anz/claudecode-kiro/internal/auth"
-	"github.com/fr-anz/claudecode-kiro/internal/httpx"
-	"github.com/fr-anz/claudecode-kiro/internal/logging"
-	"github.com/fr-anz/claudecode-kiro/internal/models"
-	"github.com/fr-anz/claudecode-kiro/internal/reqconv"
-	"github.com/fr-anz/claudecode-kiro/internal/toolsearch"
+	"github.com/fr-anz/claude-kiro-connector/internal/anthropic"
+	"github.com/fr-anz/claude-kiro-connector/internal/auth"
+	"github.com/fr-anz/claude-kiro-connector/internal/httpx"
+	"github.com/fr-anz/claude-kiro-connector/internal/logging"
+	"github.com/fr-anz/claude-kiro-connector/internal/models"
+	"github.com/fr-anz/claude-kiro-connector/internal/reqconv"
+	"github.com/fr-anz/claude-kiro-connector/internal/toolsearch"
 	"github.com/google/uuid"
 )
 

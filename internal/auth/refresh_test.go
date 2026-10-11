@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	tu "github.com/fr-anz/claudecode-kiro/internal/testutil"
+	tu "github.com/fr-anz/claude-kiro-connector/internal/testutil"
 	_ "modernc.org/sqlite"
 )
 

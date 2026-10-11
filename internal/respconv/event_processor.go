@@ -5,7 +5,7 @@ import (
 	"math"
 	"unicode/utf8"
 
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
 )
 
 // ProcessEvent processes a single Kiro event and returns the delta for this event.

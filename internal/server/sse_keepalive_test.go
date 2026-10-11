@@ -12,10 +12,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fr-anz/claudecode-kiro/internal/auth"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
-	tu "github.com/fr-anz/claudecode-kiro/internal/testutil"
+	"github.com/fr-anz/claude-kiro-connector/internal/auth"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroclient"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
+	tu "github.com/fr-anz/claude-kiro-connector/internal/testutil"
 )
 
 const toolSearchStreamingRequest = `{

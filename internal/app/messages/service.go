@@ -6,8 +6,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/fr-anz/claudecode-kiro/internal/auth"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
+	"github.com/fr-anz/claude-kiro-connector/internal/auth"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroclient"
 )
 
 // TokenGetter loads valid upstream credentials for a request.

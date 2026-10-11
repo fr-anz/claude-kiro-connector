@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security reports
-    url: https://github.com/fr-anz/claudecode-kiro/security/policy
+    url: https://github.com/fr-anz/claude-kiro-connector/security/policy
     about: Read the private-reporting guidance before sharing sensitive details.

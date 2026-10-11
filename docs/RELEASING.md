@@ -1,6 +1,6 @@
 # Release process
 
-This is the `fr-anz/claudecode-kiro` fork. Upstream `d-kuro/kirocc`
+This is the `fr-anz/claude-kiro-connector` fork. Upstream `d-kuro/kirocc`
 release history through `v0.6.0` has been pruned from `docs/release-notes/`;
 only fork prerelease notes (`v0.6.0-clawgod.*`) are kept. Never republish
 inherited tags to `origin`.

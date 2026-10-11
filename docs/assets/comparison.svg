@@ -80,6 +80,6 @@
 
     <rect x="72" y="607" width="8" height="8" rx="4" fill="#4ade80"/>
     <text x="94" y="618" class="muted" font-size="16">Kiro provider quota, authentication, billing, and model access still apply.</text>
-    <text x="1128" y="648" fill="#5f7567" font-size="13" text-anchor="end">github.com/fr-anz/claudecode-kiro</text>
+    <text x="1128" y="648" fill="#5f7567" font-size="13" text-anchor="end">github.com/fr-anz/claude-kiro-connector</text>
   </g>
 </svg>

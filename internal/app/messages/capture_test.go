@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
 )
 
 func TestNewUpstreamAttemptCapture_DisabledReturnsNil(t *testing.T) {

@@ -19,8 +19,8 @@ Requires Go 1.26.1+ and `GOEXPERIMENT=jsonv2` (set by the Makefile). Unit tests
 need no Kiro credential.
 
 ```bash
-git clone https://github.com/fr-anz/claudecode-kiro.git
-cd claudecode-kiro
+git clone https://github.com/fr-anz/claude-kiro-connector.git
+cd claude-kiro-connector
 make test        # go test -race ./...
 make lint        # golangci-lint run
 make vet

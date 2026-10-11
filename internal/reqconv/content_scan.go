@@ -1,8 +1,8 @@
 package reqconv
 
 import (
-	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/anthropic"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
 )
 
 // scanCurrentMessage walks message content once and extracts tool_results and

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/anthropic"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
 )
 
 func buildPayloadForTest(req *anthropic.Request, profileARN, modelID, conversationID string) (*kiroproto.Payload, error) {

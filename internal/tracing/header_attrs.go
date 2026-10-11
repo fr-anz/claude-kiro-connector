@@ -7,7 +7,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/fr-anz/claudecode-kiro/internal/logging"
+	"github.com/fr-anz/claude-kiro-connector/internal/logging"
 )
 
 // sanitizedHeaderAttrs converts HTTP headers to OTel attributes, redacting sensitive values.

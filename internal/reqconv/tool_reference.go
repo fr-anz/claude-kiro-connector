@@ -1,6 +1,6 @@
 package reqconv
 
-import "github.com/fr-anz/claudecode-kiro/internal/anthropic"
+import "github.com/fr-anz/claude-kiro-connector/internal/anthropic"
 
 // ExtractToolReferences scans conversation history for tool_reference blocks
 // and returns the referenced tool names. These appear in:

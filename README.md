@@ -1,6 +1,6 @@
-# claudecode-kiro
+# claude-kiro-connector
 
-[![CI](https://github.com/fr-anz/claudecode-kiro/actions/workflows/ci.yml/badge.svg)](https://github.com/fr-anz/claudecode-kiro/actions/workflows/ci.yml)
+[![CI](https://github.com/fr-anz/claude-kiro-connector/actions/workflows/ci.yml/badge.svg)](https://github.com/fr-anz/claude-kiro-connector/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 Run Claude Code against Kiro credentials through a local gateway, without
@@ -57,8 +57,8 @@ calls Kiro directly and refreshes tokens itself.
 macOS/Linux:
 
 ```bash
-git clone https://github.com/fr-anz/claudecode-kiro.git
-cd claudecode-kiro
+git clone https://github.com/fr-anz/claude-kiro-connector.git
+cd claude-kiro-connector
 ./scripts/install.sh
 claude-kiro        # or: ck
 ```
@@ -66,8 +66,8 @@ claude-kiro        # or: ck
 Windows PowerShell:
 
 ```powershell
-git clone https://github.com/fr-anz/claudecode-kiro.git
-Set-Location claudecode-kiro
+git clone https://github.com/fr-anz/claude-kiro-connector.git
+Set-Location claude-kiro-connector
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1
 claude-kiro        # or: ck
 ```

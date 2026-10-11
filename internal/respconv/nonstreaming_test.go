@@ -3,7 +3,7 @@ package respconv
 import (
 	"testing"
 
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
 )
 
 func TestBuildNonStreamingResponse_TextOnly(t *testing.T) {

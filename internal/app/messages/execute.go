@@ -5,11 +5,11 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
-	"github.com/fr-anz/claudecode-kiro/internal/auth"
-	"github.com/fr-anz/claudecode-kiro/internal/httpx"
-	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
-	"github.com/fr-anz/claudecode-kiro/internal/logging"
+	"github.com/fr-anz/claude-kiro-connector/internal/anthropic"
+	"github.com/fr-anz/claude-kiro-connector/internal/auth"
+	"github.com/fr-anz/claude-kiro-connector/internal/httpx"
+	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/logging"
 )
 
 // invocation bundles everything callAndHandle needs for one upstream attempt.

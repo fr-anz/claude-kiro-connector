@@ -6,9 +6,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/fr-anz/claudecode-kiro/internal/httpx"
-	"github.com/fr-anz/claudecode-kiro/internal/logging"
-	"github.com/fr-anz/claudecode-kiro/internal/tracing"
+	"github.com/fr-anz/claude-kiro-connector/internal/httpx"
+	"github.com/fr-anz/claude-kiro-connector/internal/logging"
+	"github.com/fr-anz/claude-kiro-connector/internal/tracing"
 )
 
 func traceMiddleware(next http.Handler) http.Handler {

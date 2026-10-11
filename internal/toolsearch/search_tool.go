@@ -1,6 +1,6 @@
 package toolsearch
 
-import "github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+import "github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
 
 // KiroToolSearchName is the name of the Kiro-side tool search tool.
 const KiroToolSearchName = "ToolSearch"
