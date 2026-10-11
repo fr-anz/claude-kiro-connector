@@ -23,6 +23,8 @@ type invocation struct {
 	contextWindowSize int
 	thinking          bool
 	toolNameMap       map[string]string
+	// promptTokens is the local token count of the last attempt's payload.
+	promptTokens int
 }
 
 // callAndHandle performs one upstream call for the invocation and streams or
@@ -36,13 +38,15 @@ func (s *Service) callAndHandle(ctx context.Context, w http.ResponseWriter, sess
 	apiResp, err := s.client.GenerateAssistantResponse(ctx, inv.creds.AccessToken, inv.payload, inv.creds.Region)
 	if err != nil {
 		logUpstreamError(ctx, short, err)
+		final := upstreamCallError(err, "upstream API error")
 		if session != nil {
-			_ = session.WriteFinalError(newStreamFinalError(http.StatusBadGateway, errTypeAPI, "upstream API error"), nil)
+			_ = session.WriteFinalError(final, nil)
 		} else {
-			httpx.WriteError(w, http.StatusBadGateway, errTypeAPI, "upstream API error")
+			writeFinalJSONError(w, final)
 		}
 		return ""
 	}
+	inv.promptTokens = apiResp.PromptTokens
 	body := apiResp.Body
 	defer func() { _ = body.Close() }()
 	if capture != nil {
@@ -107,9 +111,14 @@ func (s *Service) executeRetry(ctx context.Context, w http.ResponseWriter, sessi
 	// Retry ended with a different (final) error — report it as invalid state.
 	slog.ErrorContext(ctx, "retry failed",
 		"trace_id", short, "first_reason", reason, "second_reason", reason2)
+	final := newStreamFinalError(http.StatusBadRequest, errTypeInvalidRequest, "invalid state: "+reason2)
+	if reason2 == reasonContentLengthExceeded {
+		// A fresh conversation still overflowed: let Claude Code auto-compact.
+		final = promptTooLongError(inv.promptTokens, inv.contextWindowSize)
+	}
 	if session != nil {
-		_ = session.WriteFinalError(newStreamFinalError(http.StatusBadRequest, errTypeInvalidRequest, "invalid state: "+reason2), nil)
+		_ = session.WriteFinalError(final, nil)
 	} else {
-		httpx.WriteError(w, http.StatusBadRequest, errTypeInvalidRequest, "invalid state: "+reason2)
+		writeFinalJSONError(w, final)
 	}
 }

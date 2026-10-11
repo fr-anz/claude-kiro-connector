@@ -259,6 +259,8 @@ fi
   ANTHROPIC_BASE_URL="\$gateway_url" \
   ANTHROPIC_AUTH_TOKEN="\$proxy_token" \
   ANTHROPIC_MODEL="\${ANTHROPIC_MODEL:-claude-opus-5-5}" \
+  ANTHROPIC_DEFAULT_HAIKU_MODEL="\${ANTHROPIC_DEFAULT_HAIKU_MODEL:-claude-sonnet-5-5}" \
+  DISABLE_AUTOUPDATER=1 \
   "\$runtime_bin" "\$@"
 LAUNCHER
 chmod 0755 "$launcher_path"

@@ -87,6 +87,16 @@ if (-not $env:ANTHROPIC_MODEL) {
     $env:ANTHROPIC_MODEL = "claude-opus-5-5"
 }
 
+# Background tasks (titles, summaries) use Claude Code's small/fast model.
+# Route them to Sonnet 5.5, which Kiro serves, unless already overridden.
+if (-not $env:ANTHROPIC_DEFAULT_HAIKU_MODEL) {
+    $env:ANTHROPIC_DEFAULT_HAIKU_MODEL = "claude-sonnet-5-5"
+}
+
+# The isolated profile must never replace the official runtime; updates go
+# through the project installer only.
+$env:DISABLE_AUTOUPDATER = "1"
+
 if ($args.Count -gt 0 -and $args[0] -eq "update") {
     Write-Error "claude-kiro: updates are disabled in the isolated profile; rerun the project installer"
     exit 2
