@@ -10,12 +10,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/d-kuro/kirocc/internal/auth"
-	"github.com/d-kuro/kirocc/internal/config"
-	"github.com/d-kuro/kirocc/internal/kiroclient"
-	"github.com/d-kuro/kirocc/internal/server"
-	"github.com/d-kuro/kirocc/internal/testutil"
-	"github.com/d-kuro/kirocc/internal/tokencount"
+	"github.com/fr-anz/claudecode-kiro/internal/auth"
+	"github.com/fr-anz/claudecode-kiro/internal/config"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
+	"github.com/fr-anz/claudecode-kiro/internal/server"
+	"github.com/fr-anz/claudecode-kiro/internal/testutil"
+	"github.com/fr-anz/claudecode-kiro/internal/tokencount"
 )
 
 func newRealServer(t *testing.T) string {

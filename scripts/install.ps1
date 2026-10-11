@@ -32,14 +32,14 @@ function Write-Usage {
     @"
 Usage: .\scripts\install.ps1
 
-  Installs KiroCC + an isolated claude-kiro launcher using official Claude Code.
+  Installs claude-kiro (local gateway + isolated launcher) using official Claude Code.
 
 Environment overrides:
   CLAUDE_KIRO_INSTALL_ROOT
   CLAUDE_KIRO_STATE_ROOT
   CLAUDE_KIRO_BIN_DIR
-  KIROCC_PORT
-  KIROCC_DB_PATH
+  CLAUDE_KIRO_PORT
+  CLAUDE_KIRO_DB_PATH
   KIRO_API_KEY       Kiro upstream API key; makes Kiro CLI optional.
   KIRO_API_REGION
 "@ | Write-Host
@@ -53,11 +53,11 @@ if ($Help) {
 $InstallRoot = Get-EnvOrDefault "CLAUDE_KIRO_INSTALL_ROOT" (Join-Path $env:LOCALAPPDATA "claude-kiro")
 $StateRoot = Get-EnvOrDefault "CLAUDE_KIRO_STATE_ROOT" (Join-Path $env:USERPROFILE ".claude-kiro")
 $UserBinDir = Get-EnvOrDefault "CLAUDE_KIRO_BIN_DIR" (Join-Path $env:USERPROFILE ".local\bin")
-$GatewayPortText = Get-EnvOrDefault "KIROCC_PORT" "3457"
+$GatewayPortText = Get-EnvOrDefault "CLAUDE_KIRO_PORT" "3457"
 
 $GatewayPort = 0
 if (-not [int]::TryParse($GatewayPortText, [ref]$GatewayPort) -or $GatewayPort -lt 1 -or $GatewayPort -gt 65535) {
-    throw "KIROCC_PORT must be between 1 and 65535"
+    throw "CLAUDE_KIRO_PORT must be between 1 and 65535"
 }
 
 if (-not (Get-Command go -ErrorAction SilentlyContinue)) {
@@ -111,8 +111,8 @@ $OfficialClaudePath = if ($OfficialClaudeCommand.Path) {
 $OfficialClaudePath = [IO.Path]::GetFullPath($OfficialClaudePath)
 $OfficialClaudeHash = Get-Sha256Hex $OfficialClaudePath
 
-$kiroDatabaseCandidates = if ($env:KIROCC_DB_PATH) {
-    @($env:KIROCC_DB_PATH)
+$kiroDatabaseCandidates = if ($env:CLAUDE_KIRO_DB_PATH) {
+    @($env:CLAUDE_KIRO_DB_PATH)
 } else {
     @(
         (Join-Path $env:USERPROFILE ".local\share\kiro-cli\data.sqlite3"),
@@ -138,7 +138,7 @@ Run:
   kiro-cli whoami
 
 Then rerun this installer. Request traffic will still be sent directly by the
-kirocc gateway; this check only validates the credential it will read.
+claude-kiro gateway; this check only validates the credential it will read.
 "@
         }
         Write-Host "Kiro authentication: existing login confirmed (whoami output redacted)."
@@ -161,7 +161,7 @@ No usable Kiro credential source found.
 $kiroCliState
 
 Kiro CLI is used only to create the local login credential; request traffic is
-sent directly by the kirocc gateway. Install/login with:
+sent directly by the claude-kiro gateway. Install/login with:
 
   irm 'https://cli.kiro.dev/install.ps1' | iex
   kiro-cli login
@@ -183,17 +183,17 @@ $TemporaryRoot = Join-Path $env:TEMP "claude-kiro-$([Guid]::NewGuid().ToString('
 New-Item -ItemType Directory -Force -Path $TemporaryRoot | Out-Null
 
 try {
-    Write-Host "Building patched kirocc..."
-    $temporaryGateway = Join-Path $TemporaryRoot "kirocc-native-websearch.exe"
+    Write-Host "Building patched claude-kiro..."
+    $temporaryGateway = Join-Path $TemporaryRoot "claude-kiro-native-websearch.exe"
     $oldGoExperiment = $env:GOEXPERIMENT
     try {
         $env:GOEXPERIMENT = "jsonv2"
-        & go build -trimpath -o $temporaryGateway (Join-Path $ProjectRoot "cmd\kirocc")
+        & go build -trimpath -o $temporaryGateway (Join-Path $ProjectRoot "cmd\claude-kiro")
         if ($LASTEXITCODE -ne 0) { throw "go build failed with exit code $LASTEXITCODE" }
     } finally {
         $env:GOEXPERIMENT = $oldGoExperiment
     }
-    $installedGateway = Join-Path $InstallRoot "bin\kirocc-native-websearch.exe"
+    $installedGateway = Join-Path $InstallRoot "bin\claude-kiro-native-websearch.exe"
     Copy-Item -LiteralPath $temporaryGateway -Destination $installedGateway -Force
 
     $isolatedConfigDir = Join-Path $StateRoot "claude-config"

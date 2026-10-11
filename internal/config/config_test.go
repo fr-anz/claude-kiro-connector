@@ -108,7 +108,7 @@ func TestApplyEnvOverrides_KeepAliveInterval(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			t.Setenv("KIROCC_KEEPALIVE_INTERVAL", tt.value)
+			t.Setenv("CLAUDE_KIRO_KEEPALIVE_INTERVAL", tt.value)
 			cfg := Config{Host: "127.0.0.1", Port: 3456, KeepAliveInterval: DefaultKeepAliveInterval}
 
 			err := ApplyEnvOverrides(&cfg)
@@ -138,20 +138,20 @@ func TestDefaultDBPathFor(t *testing.T) {
 		{
 			name: "darwin",
 			goos: "darwin",
-			home: "/Users/dkuro",
-			want: filepath.Join("/Users/dkuro", "Library", "Application Support", "kiro-cli", "data.sqlite3"),
+			home: "/Users/dev",
+			want: filepath.Join("/Users/dev", "Library", "Application Support", "kiro-cli", "data.sqlite3"),
 		},
 		{
 			name: "linux",
 			goos: "linux",
-			home: "/home/dkuro",
-			want: filepath.Join("/home/dkuro", ".local", "share", "kiro-cli", "data.sqlite3"),
+			home: "/home/dev",
+			want: filepath.Join("/home/dev", ".local", "share", "kiro-cli", "data.sqlite3"),
 		},
 		{
 			name: "windows",
 			goos: "windows",
-			home: `C:\Users\dkuro`,
-			want: filepath.Join(`C:\Users\dkuro`, ".local", "share", "kiro-cli", "data.sqlite3"),
+			home: `C:\Users\dev`,
+			want: filepath.Join(`C:\Users\dev`, ".local", "share", "kiro-cli", "data.sqlite3"),
 		},
 	}
 
@@ -165,12 +165,12 @@ func TestDefaultDBPathFor(t *testing.T) {
 }
 
 func TestApplyEnvOverrides_LogFields(t *testing.T) {
-	t.Setenv("KIROCC_LOG_FILE", "/tmp/test.log")
-	t.Setenv("KIROCC_LOG_MAX_SIZE", "50")
-	t.Setenv("KIROCC_LOG_MAX_BACKUPS", "10")
-	t.Setenv("KIROCC_LOG_MAX_AGE", "30")
-	t.Setenv("KIROCC_LOG_COMPRESS", "true")
-	t.Setenv("KIROCC_LOG_CONSOLE", "true")
+	t.Setenv("CLAUDE_KIRO_LOG_FILE", "/tmp/test.log")
+	t.Setenv("CLAUDE_KIRO_LOG_MAX_SIZE", "50")
+	t.Setenv("CLAUDE_KIRO_LOG_MAX_BACKUPS", "10")
+	t.Setenv("CLAUDE_KIRO_LOG_MAX_AGE", "30")
+	t.Setenv("CLAUDE_KIRO_LOG_COMPRESS", "true")
+	t.Setenv("CLAUDE_KIRO_LOG_CONSOLE", "true")
 
 	cfg := Config{}
 	if err := ApplyEnvOverrides(&cfg); err != nil {

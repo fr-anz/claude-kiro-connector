@@ -5,7 +5,7 @@ project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 install_root="${CLAUDE_KIRO_INSTALL_ROOT:-$HOME/.local/share/claude-kiro}"
 state_root="${CLAUDE_KIRO_STATE_ROOT:-$HOME/.claude-kiro}"
 user_bin_dir="${CLAUDE_KIRO_BIN_DIR:-$HOME/.local/bin}"
-gateway_port="${KIROCC_PORT:-3457}"
+gateway_port="${CLAUDE_KIRO_PORT:-3457}"
 
 usage() {
   cat <<'USAGE'
@@ -15,8 +15,8 @@ Environment overrides:
   CLAUDE_KIRO_INSTALL_ROOT       Gateway installation root.
   CLAUDE_KIRO_STATE_ROOT         Isolated Claude Code state/config root.
   CLAUDE_KIRO_BIN_DIR            Directory for the claude-kiro launcher.
-  KIROCC_PORT                    Gateway port (default: 3457).
-  KIROCC_DB_PATH                 Existing Kiro CLI login database.
+  CLAUDE_KIRO_PORT                    Gateway port (default: 3457).
+  CLAUDE_KIRO_DB_PATH                 Existing Kiro CLI login database.
   KIRO_API_KEY                   Kiro upstream API key; makes Kiro CLI optional.
   KIRO_API_REGION                Kiro API-key region (default: us-east-1).
 USAGE
@@ -31,11 +31,11 @@ while (($# > 0)); do
 done
 
 case "$gateway_port" in
-  ''|*[!0-9]*) printf 'KIROCC_PORT must be numeric\n' >&2; exit 2 ;;
+  ''|*[!0-9]*) printf 'CLAUDE_KIRO_PORT must be numeric\n' >&2; exit 2 ;;
 esac
 gateway_port_number=$((10#$gateway_port))
 if ((gateway_port_number < 1 || gateway_port_number > 65535)); then
-  printf 'KIROCC_PORT must be between 1 and 65535\n' >&2
+  printf 'CLAUDE_KIRO_PORT must be between 1 and 65535\n' >&2
   exit 2
 fi
 
@@ -57,7 +57,7 @@ case "$(uname -s)" in
   Linux) default_kiro_db="$HOME/.local/share/kiro-cli/data.sqlite3" ;;
   *) default_kiro_db="" ;;
 esac
-kiro_db_path="${KIROCC_DB_PATH:-$default_kiro_db}"
+kiro_db_path="${CLAUDE_KIRO_DB_PATH:-$default_kiro_db}"
 if [[ -n "${KIRO_API_KEY:-}" ]]; then
   printf 'Kiro authentication: API-key mode (Kiro CLI is not required).\n'
 elif [[ -n "$kiro_db_path" && -f "$kiro_db_path" ]]; then
@@ -73,7 +73,7 @@ Run:
   kiro-cli whoami
 
 Then rerun this installer. Request traffic will still be sent directly by the
-kirocc gateway; this check only validates the credential it will read.
+claude-kiro gateway; this check only validates the credential it will read.
 EOF
       exit 78
     fi
@@ -91,7 +91,7 @@ No usable Kiro credential source found.
 $kiro_cli_state
 
 Kiro CLI is used only to create the local login credential; request traffic is
-sent directly by the kirocc gateway. Install/login with:
+sent directly by the claude-kiro gateway. Install/login with:
 
   curl -fsSL https://cli.kiro.dev/install | bash
   kiro-cli login
@@ -120,9 +120,9 @@ cleanup_install() {
 }
 trap cleanup_install EXIT INT TERM HUP
 
-printf 'Building patched kirocc...\n'
-GOEXPERIMENT=jsonv2 go build -trimpath -o "$temporary_root/kirocc" "$project_root/cmd/kirocc"
-install -m 0755 "$temporary_root/kirocc" "$install_root/bin/kirocc-native-websearch"
+printf 'Building patched claude-kiro...\n'
+GOEXPERIMENT=jsonv2 go build -trimpath -o "$temporary_root/claude-kiro" "$project_root/cmd/claude-kiro"
+install -m 0755 "$temporary_root/claude-kiro" "$install_root/bin/claude-kiro-native-websearch"
 
 if [[ ! -f "$state_root/claude-config/CLAUDE.md" ]]; then
   install -m 0644 "$project_root/config/CLAUDE.md" "$state_root/claude-config/CLAUDE.md"
@@ -136,12 +136,12 @@ cat > "$launcher_path" <<LAUNCHER
 #!/usr/bin/env bash
 set -euo pipefail
 
-kirocc_bin="\${KIROCC_BIN:-$install_root/bin/kirocc-native-websearch}"
+claude-kiro_bin="\${CLAUDE_KIRO_BIN:-$install_root/bin/claude-kiro-native-websearch}"
 runtime_bin="\${CLAUDE_KIRO_RUNTIME_BIN:-$official_claude_real}"
 config_dir="\${CLAUDE_KIRO_CONFIG_DIR:-$state_root/claude-config}"
-gateway_port="\${KIROCC_PORT:-$gateway_port}"
-gateway_url="\${KIROCC_URL:-http://127.0.0.1:\${gateway_port}}"
-proxy_token="\${KIROCC_API_KEY:-dummy}"
+gateway_port="\${CLAUDE_KIRO_PORT:-$gateway_port}"
+gateway_url="\${CLAUDE_KIRO_URL:-http://127.0.0.1:\${gateway_port}}"
+proxy_token="\${CLAUDE_KIRO_API_KEY:-dummy}"
 export KIRO_API_REGION="\${KIRO_API_REGION:-us-east-1}"
 log_file="\${TMPDIR:-/tmp}/claude-kiro-gateway-\${UID}-\${gateway_port}.log"
 started_pid=""
@@ -170,7 +170,7 @@ prepare_local_kiro_credentials() {
     return 0
   fi
 
-  local database_path="\${KIROCC_DB_PATH:-}"
+  local database_path="\${CLAUDE_KIRO_DB_PATH:-}"
   if [[ -z "\$database_path" ]]; then
     case "\$(uname -s)" in
       Darwin) database_path="\$HOME/Library/Application Support/kiro-cli/data.sqlite3" ;;
@@ -178,14 +178,14 @@ prepare_local_kiro_credentials() {
     esac
   fi
   if [[ -n "\$database_path" && -f "\$database_path" ]]; then
-    export KIROCC_DB_PATH="\$database_path"
+    export CLAUDE_KIRO_DB_PATH="\$database_path"
     return 0
   fi
 
   cat >&2 <<EOF
 claude-kiro: no usable Kiro credential source was found.
 Kiro CLI is only needed to create the login credential; traffic is sent by the
-kirocc gateway itself.
+claude-kiro gateway itself.
 
 Install/login Kiro CLI:
   curl -fsSL https://cli.kiro.dev/install | bash
@@ -203,15 +203,15 @@ gateway_is_healthy=false
 if curl -fsS --noproxy '*' --max-time 1 "\$gateway_url/health" >/dev/null 2>&1; then
   gateway_is_healthy=true
   if ! gateway_accepts_token; then
-    echo "claude-kiro: a gateway is already running at \$gateway_url but rejects the current KIROCC_API_KEY" >&2
-    echo "Use the matching local proxy key or choose an unused port, for example: KIROCC_PORT=3458 claude-kiro" >&2
+    echo "claude-kiro: a gateway is already running at \$gateway_url but rejects the current CLAUDE_KIRO_API_KEY" >&2
+    echo "Use the matching local proxy key or choose an unused port, for example: CLAUDE_KIRO_PORT=3458 claude-kiro" >&2
     exit 1
   fi
 fi
 
 if [[ "\$gateway_is_healthy" != true ]]; then
   prepare_local_kiro_credentials
-  "\$kirocc_bin" -port "\$gateway_port" >"\$log_file" 2>&1 &
+  "\$claude-kiro_bin" -port "\$gateway_port" >"\$log_file" 2>&1 &
   started_pid=\$!
   ready=false
   for _attempt in {1..50}; do
@@ -292,7 +292,7 @@ fi
 
 printf '\nInstalled successfully:\n'
 printf '  launcher: %s\n' "$launcher_path"
-printf '  gateway:  %s\n' "$install_root/bin/kirocc-native-websearch"
+printf '  gateway:  %s\n' "$install_root/bin/claude-kiro-native-websearch"
 printf '  runtime:  %s\n' "$official_claude_real"
 printf '  config:    %s\n' "$state_root/claude-config"
 printf '  command:   claude-kiro\n\n'

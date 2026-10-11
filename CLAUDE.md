@@ -17,10 +17,10 @@
 ## Commands
 
 ```bash
-make build          # Build to dist/kirocc
+make build          # Build to dist/claude-kiro
 make test           # go test -race ./...
 make lint           # golangci-lint run
-make run            # go run ./cmd/kirocc
+make run            # go run ./cmd/claude-kiro
 make test-e2e       # E2E tests with real Kiro API (requires credentials)
 ```
 

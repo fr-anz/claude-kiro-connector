@@ -72,7 +72,7 @@ jobs:
           $env:CLAUDE_KIRO_INSTALL_ROOT = $installRoot
           $env:CLAUDE_KIRO_STATE_ROOT = $stateRoot
           $env:CLAUDE_KIRO_BIN_DIR = $userBin
-          $env:KIROCC_PORT = "45678"
+          $env:CLAUDE_KIRO_PORT = "45678"
           $env:KIRO_API_KEY = "ksk_ci_placeholder"
           $env:KIRO_API_REGION = "us-east-1"
           & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1

@@ -1,9 +1,9 @@
 version: 2
 
 builds:
-  - id: kirocc
-    main: ./cmd/kirocc
-    binary: kirocc
+  - id: claude-kiro
+    main: ./cmd/claude-kiro
+    binary: claude-kiro
     env:
       - CGO_ENABLED=0
       - GOEXPERIMENT=jsonv2
@@ -18,9 +18,9 @@ builds:
       - arm64
 
 archives:
-  - id: kirocc
+  - id: claude-kiro
     ids:
-      - kirocc
+      - claude-kiro
     formats:
       - tar.gz
     format_overrides:

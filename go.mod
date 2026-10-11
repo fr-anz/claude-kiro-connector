@@ -1,4 +1,4 @@
-module github.com/d-kuro/kirocc
+module github.com/fr-anz/claudecode-kiro
 
 go 1.26.1
 

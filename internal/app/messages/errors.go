@@ -7,8 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/d-kuro/kirocc/internal/httpx"
-	"github.com/d-kuro/kirocc/internal/kiroclient"
+	"github.com/fr-anz/claudecode-kiro/internal/httpx"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroclient"
 )
 
 func writeRequestValidationError(w http.ResponseWriter, err error) {

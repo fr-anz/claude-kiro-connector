@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"strings"
 
-	"github.com/d-kuro/kirocc/internal/anthropic"
-	"github.com/d-kuro/kirocc/internal/kiroproto"
+	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
 )
 
 // ExtractImages extracts image blocks from message content and converts to Kiro format.

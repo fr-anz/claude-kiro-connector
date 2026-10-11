@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/d-kuro/kirocc/internal/anthropic"
+	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
 )
 
 var (

@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/d-kuro/kirocc/internal/kiroproto"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
 )
 
 func TestAccumulator_TextDelta(t *testing.T) {

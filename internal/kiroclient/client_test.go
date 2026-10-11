@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/d-kuro/kirocc/internal/kiroproto"
-	tu "github.com/d-kuro/kirocc/internal/testutil"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
+	tu "github.com/fr-anz/claudecode-kiro/internal/testutil"
 )
 
 // newTCP4TestServer creates an httptest.Server bound to tcp4 to avoid IPv6 bind failures in sandboxed environments.

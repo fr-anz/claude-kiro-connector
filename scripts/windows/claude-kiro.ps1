@@ -37,41 +37,41 @@ $configDir = if ($env:CLAUDE_KIRO_CONFIG_DIR) {
 } else {
     Join-Path $stateRoot "claude-config"
 }
-$gatewayBin = if ($env:KIROCC_BIN) {
-    $env:KIROCC_BIN
+$gatewayBin = if ($env:CLAUDE_KIRO_BIN) {
+    $env:CLAUDE_KIRO_BIN
 } else {
-    Join-Path $installRoot "bin\kirocc-native-websearch.exe"
+    Join-Path $installRoot "bin\claude-kiro-native-websearch.exe"
 }
 $runtimeBin = if ($env:CLAUDE_KIRO_RUNTIME_BIN) {
     $env:CLAUDE_KIRO_RUNTIME_BIN
 } else {
     [string]$launcherConfig.runtimeCommand
 }
-$gatewayPortText = if ($env:KIROCC_PORT) {
-    $env:KIROCC_PORT
+$gatewayPortText = if ($env:CLAUDE_KIRO_PORT) {
+    $env:CLAUDE_KIRO_PORT
 } else {
     [string]$launcherConfig.defaultPort
 }
 
 $gatewayPort = 0
 if (-not [int]::TryParse($gatewayPortText, [ref]$gatewayPort) -or $gatewayPort -lt 1 -or $gatewayPort -gt 65535) {
-    Write-Error "claude-kiro: KIROCC_PORT must be between 1 and 65535"
+    Write-Error "claude-kiro: CLAUDE_KIRO_PORT must be between 1 and 65535"
     exit 2
 }
 
-$gatewayUrl = if ($env:KIROCC_URL) {
-    $env:KIROCC_URL.TrimEnd('/')
+$gatewayUrl = if ($env:CLAUDE_KIRO_URL) {
+    $env:CLAUDE_KIRO_URL.TrimEnd('/')
 } else {
     "http://127.0.0.1:$gatewayPort"
 }
 try {
     $gatewayUri = [Uri]$gatewayUrl
 } catch {
-    Write-Error "claude-kiro: KIROCC_URL is not a valid URL: $gatewayUrl"
+    Write-Error "claude-kiro: CLAUDE_KIRO_URL is not a valid URL: $gatewayUrl"
     exit 2
 }
 $gatewayIsLoopback = $gatewayUri.IsLoopback
-$proxyToken = if ($env:KIROCC_API_KEY) { $env:KIROCC_API_KEY } else { "dummy" }
+$proxyToken = if ($env:CLAUDE_KIRO_API_KEY) { $env:CLAUDE_KIRO_API_KEY } else { "dummy" }
 
 # The region stored by kiro-cli is the login region, but Kiro inference is not
 # served in every AWS region. Pin managed gateway traffic to a known runtime by
@@ -137,8 +137,8 @@ function Test-GatewayAccess {
 function Set-LocalKiroCredentialSource {
     if ($env:KIRO_API_KEY) { return }
 
-    $databaseCandidates = if ($env:KIROCC_DB_PATH) {
-        @($env:KIROCC_DB_PATH)
+    $databaseCandidates = if ($env:CLAUDE_KIRO_DB_PATH) {
+        @($env:CLAUDE_KIRO_DB_PATH)
     } else {
         @(
             (Join-Path $env:USERPROFILE ".local\share\kiro-cli\data.sqlite3"),
@@ -150,7 +150,7 @@ function Set-LocalKiroCredentialSource {
         Test-Path -LiteralPath $_ -PathType Leaf
     } | Select-Object -First 1
     if ($databasePath) {
-        $env:KIROCC_DB_PATH = $databasePath
+        $env:CLAUDE_KIRO_DB_PATH = $databasePath
         return
     }
 
@@ -162,7 +162,7 @@ function Set-LocalKiroCredentialSource {
     Write-Error @"
 claude-kiro: no usable Kiro credential source was found.
 Kiro CLI is only needed to create the login credential; traffic is sent by the
-kirocc gateway itself.
+claude-kiro gateway itself.
 
 Install/login Kiro CLI:
   irm 'https://cli.kiro.dev/install.ps1' | iex
@@ -184,7 +184,7 @@ $stderrLog = "$logBase.err.log"
 try {
     $gatewayHealthy = Test-GatewayHealth
     if ($gatewayHealthy -and -not (Test-GatewayAccess)) {
-        Write-Error "claude-kiro: a gateway is already running at $gatewayUrl but rejects the current KIROCC_API_KEY. Use the matching local proxy key or choose an unused port, for example: `$env:KIROCC_PORT='3458'; claude-kiro"
+        Write-Error "claude-kiro: a gateway is already running at $gatewayUrl but rejects the current CLAUDE_KIRO_API_KEY. Use the matching local proxy key or choose an unused port, for example: `$env:CLAUDE_KIRO_PORT='3458'; claude-kiro"
         exit 1
     }
     if (-not $gatewayHealthy) {

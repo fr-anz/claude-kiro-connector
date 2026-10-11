@@ -3,7 +3,7 @@ package reqconv
 import (
 	"testing"
 
-	"github.com/d-kuro/kirocc/internal/anthropic"
+	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
 )
 
 func TestExtractTextContent(t *testing.T) {

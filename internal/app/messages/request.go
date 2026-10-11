@@ -12,11 +12,11 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/d-kuro/kirocc/internal/anthropic"
-	"github.com/d-kuro/kirocc/internal/httpx"
-	"github.com/d-kuro/kirocc/internal/models"
-	"github.com/d-kuro/kirocc/internal/reqconv"
-	"github.com/d-kuro/kirocc/internal/tokencount"
+	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
+	"github.com/fr-anz/claudecode-kiro/internal/httpx"
+	"github.com/fr-anz/claudecode-kiro/internal/models"
+	"github.com/fr-anz/claudecode-kiro/internal/reqconv"
+	"github.com/fr-anz/claudecode-kiro/internal/tokencount"
 )
 
 // maxRequestBytes bounds the complete JSON body, including base64 images and history.

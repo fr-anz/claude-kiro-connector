@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/d-kuro/kirocc/internal/anthropic"
-	"github.com/d-kuro/kirocc/internal/models"
+	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
+	"github.com/fr-anz/claudecode-kiro/internal/models"
 )
 
 func TestResolveEffort(t *testing.T) {

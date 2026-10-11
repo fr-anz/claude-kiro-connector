@@ -10,7 +10,7 @@ separate from preparing code and release notes.
 
 ## Artifact boundary
 
-GoReleaser publishes standalone `kirocc` gateway binaries for macOS, Linux,
+GoReleaser publishes standalone `claude-kiro` gateway binaries for macOS, Linux,
 and Windows on amd64 and arm64. Windows artifacts use ZIP; macOS/Linux use
 tar.gz. Those archives do not contain Claude Code, credentials, or the
 complete-profile installer output.
@@ -58,7 +58,7 @@ The release workflow runs on any `v*` tag.
    ./scripts/doctor.sh --help >/dev/null
    python3 -m json.tool config/settings.json >/dev/null
    xmllint --noout docs/assets/comparison.svg
-   GOOS=windows GOARCH=amd64 CGO_ENABLED=0 GOEXPERIMENT=jsonv2 go build -o /tmp/kirocc.exe ./cmd/kirocc
+   GOOS=windows GOARCH=amd64 CGO_ENABLED=0 GOEXPERIMENT=jsonv2 go build -o /tmp/claude-kiro.exe ./cmd/claude-kiro
    ```
 
 5. Push the release-preparation commit and wait for CI to pass on that exact
@@ -93,5 +93,5 @@ ambiguous releases.
 - [ ] GitHub CI passes on the exact commit.
 - [ ] Only the single new tag was pushed.
 - [ ] GoReleaser completed for all six OS/architecture targets.
-- [ ] Checksums and extracted `kirocc --help` were verified.
+- [ ] Checksums and extracted `claude-kiro --help` were verified.
 - [ ] GitHub Release notes were replaced with the reviewed markdown.

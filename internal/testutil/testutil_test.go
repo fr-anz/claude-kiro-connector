@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/d-kuro/kirocc/internal/kiroproto"
+	"github.com/fr-anz/claudecode-kiro/internal/kiroproto"
 )
 
 func TestBuildFrame_ParseStream(t *testing.T) {

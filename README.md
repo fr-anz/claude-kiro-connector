@@ -8,7 +8,7 @@ touching your official `claude` installation.
 
 This repository contains two things:
 
-- **`kirocc`** — a local HTTP gateway that translates the Anthropic Messages API
+- **`claude-kiro` gateway** — a local HTTP gateway that translates the Anthropic Messages API
   to the Kiro backend (AWS Event Stream) and back. It is based on
   [d-kuro/kirocc](https://github.com/d-kuro/kirocc) and adds Kiro-native
   WebSearch, image-input fixes, and installer tooling.
@@ -81,10 +81,10 @@ export KIRO_API_REGION=us-east-1
 | Purpose | macOS/Linux | Windows |
 | --- | --- | --- |
 | Launchers | `~/.local/bin/claude-kiro`, `ck` | `%USERPROFILE%\.local\bin\claude-kiro.cmd`, `ck.cmd`, `ck.ps1` |
-| Gateway binary | `~/.local/share/claude-kiro/bin/kirocc-native-websearch` | `%LOCALAPPDATA%\claude-kiro\bin\kirocc-native-websearch.exe` |
+| Gateway binary | `~/.local/share/claude-kiro/bin/claude-kiro-native-websearch` | `%LOCALAPPDATA%\claude-kiro\bin\claude-kiro-native-websearch.exe` |
 | Isolated Claude config | `~/.claude-kiro/claude-config/` | `%USERPROFILE%\.claude-kiro\claude-config\` |
 
-The launcher reuses a healthy gateway at `KIROCC_URL` (default
+The launcher reuses a healthy gateway at `CLAUDE_KIRO_URL` (default
 `http://127.0.0.1:3457`); otherwise it starts one for the lifetime of the
 session. It sets `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN`, and
 `ANTHROPIC_MODEL` (default `claude-opus-5-5` when unset), and strips proxy
@@ -101,8 +101,8 @@ The profile ships [`config/CLAUDE.md`](config/CLAUDE.md) and
 | `CLAUDE_KIRO_BIN_DIR` | Launcher directory (default `~/.local/bin`) |
 | `CLAUDE_KIRO_RUNTIME_BIN` | Claude runtime used by the launcher |
 | `CLAUDE_KIRO_CONFIG_DIR` | Claude config directory used by the launcher |
-| `KIROCC_PORT` | Managed gateway port (default `3457`) |
-| `KIROCC_DB_PATH` | Kiro CLI login database path |
+| `CLAUDE_KIRO_PORT` | Managed gateway port (default `3457`) |
+| `CLAUDE_KIRO_DB_PATH` | Kiro CLI login database path |
 
 ### Verify, update, uninstall
 
@@ -120,27 +120,27 @@ Windows equivalents: `.\scripts\doctor.ps1`, `.\scripts\install.ps1`,
 
 ```bash
 make build
-./dist/kirocc                       # listens on 127.0.0.1:3456
+./dist/claude-kiro                  # listens on 127.0.0.1:3456
 ANTHROPIC_BASE_URL=http://127.0.0.1:3456 ANTHROPIC_AUTH_TOKEN=dummy claude
 ```
 
-Every flag has an environment equivalent; run `kirocc -h` for the full list.
+Every flag has an environment equivalent; run `claude-kiro -h` for the full list.
 
 | Flag | Environment | Default |
 | --- | --- | --- |
-| `-host` / `-port` | `KIROCC_HOST` / `KIROCC_PORT` | `127.0.0.1` / `3456` |
-| `-db` | `KIROCC_DB_PATH` | Kiro CLI default path |
-| `-api-key` | `KIROCC_API_KEY` | none (local gateway auth, `Authorization: Bearer`) |
+| `-host` / `-port` | `CLAUDE_KIRO_HOST` / `CLAUDE_KIRO_PORT` | `127.0.0.1` / `3456` |
+| `-db` | `CLAUDE_KIRO_DB_PATH` | Kiro CLI default path |
+| `-api-key` | `CLAUDE_KIRO_API_KEY` | none (local gateway auth, `Authorization: Bearer`) |
 | `-kiro-api-key` | `KIRO_API_KEY` | none (use DB credential) |
 | `-kiro-api-region` | `KIRO_API_REGION` | credential region |
-| `-debug` | `KIROCC_DEBUG` | `false` |
-| `-otel`, `-otel-body-limit` | `KIROCC_OTEL`, `KIROCC_OTEL_BODY_LIMIT` | off |
-| `-keepalive-interval` | `KIROCC_KEEPALIVE_INTERVAL` | `15s` (`0` disables) |
-| `-log-file` and `-log-*` | `KIROCC_LOG_*` | console only |
+| `-debug` | `CLAUDE_KIRO_DEBUG` | `false` |
+| `-otel`, `-otel-body-limit` | `CLAUDE_KIRO_OTEL`, `CLAUDE_KIRO_OTEL_BODY_LIMIT` | off |
+| `-keepalive-interval` | `CLAUDE_KIRO_KEEPALIVE_INTERVAL` | `15s` (`0` disables) |
+| `-log-file` and `-log-*` | `CLAUDE_KIRO_LOG_*` | console only |
 
 Model names are mapped to Kiro IDs in
 [`internal/models/models.go`](internal/models/models.go). Override them with
-`KIROCC_MODEL_MAPPINGS`, a JSON array of
+`CLAUDE_KIRO_MODEL_MAPPINGS`, a JSON array of
 `{"anthropic": "...", "kiro": "..."}` objects.
 
 ## Security notes

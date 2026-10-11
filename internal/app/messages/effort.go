@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/d-kuro/kirocc/internal/anthropic"
-	"github.com/d-kuro/kirocc/internal/logging"
-	"github.com/d-kuro/kirocc/internal/models"
+	"github.com/fr-anz/claudecode-kiro/internal/anthropic"
+	"github.com/fr-anz/claudecode-kiro/internal/logging"
+	"github.com/fr-anz/claudecode-kiro/internal/models"
 )
 
 // formatContextWindow renders a context window size as a human label like

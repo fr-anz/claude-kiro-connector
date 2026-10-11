@@ -24,7 +24,7 @@ cd claudecode-kiro
 make test        # go test -race ./...
 make lint        # golangci-lint run
 make vet
-make build       # dist/kirocc
+make build       # dist/claude-kiro
 ```
 
 If your system Go is newer than the version in `go.mod`, pin the toolchain for

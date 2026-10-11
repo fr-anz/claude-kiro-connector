@@ -8,7 +8,7 @@ import (
 func TestResolve(t *testing.T) {
 	tests := []struct {
 		name               string
-		envMappings        string // KIROCC_MODEL_MAPPINGS value; empty = unset
+		envMappings        string // CLAUDE_KIRO_MODEL_MAPPINGS value; empty = unset
 		model              string
 		context1M          bool
 		wantKiroModel      string
@@ -425,7 +425,7 @@ func TestResolve(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.envMappings != "" {
-				t.Setenv("KIROCC_MODEL_MAPPINGS", tt.envMappings)
+				t.Setenv("CLAUDE_KIRO_MODEL_MAPPINGS", tt.envMappings)
 			}
 			gotModel, gotThinking, gotWindow, gotAnthropic := Resolve(tt.model, tt.context1M)
 			if gotModel != tt.wantKiroModel {
@@ -480,9 +480,9 @@ func TestListModels(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.envMappings != "" {
-				t.Setenv("KIROCC_MODEL_MAPPINGS", tt.envMappings)
+				t.Setenv("CLAUDE_KIRO_MODEL_MAPPINGS", tt.envMappings)
 			} else {
-				t.Setenv("KIROCC_MODEL_MAPPINGS", "")
+				t.Setenv("CLAUDE_KIRO_MODEL_MAPPINGS", "")
 			}
 
 			result := ListModels()
