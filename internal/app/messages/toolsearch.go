@@ -102,9 +102,9 @@ func (o *toolSearchOrchestrator) handleStreaming(ctx context.Context, session *s
 		apiResp, err := o.service.client.GenerateAssistantResponse(ctx, o.creds.AccessToken, payload, o.creds.Region)
 		if err != nil {
 			logUpstreamError(ctx, short, err, "round", round+1)
-			final := newStreamFinalError(http.StatusBadGateway, errTypeAPI, "upstream API error")
+			final := upstreamCallError(err, "upstream API error")
 			_ = session.WriteFinalError(final, func() error {
-				return sw.WriteError(errTypeAPI, "upstream API error")
+				return sw.WriteError(final.sseType, final.sseMessage)
 			})
 			return ""
 		}
@@ -293,7 +293,7 @@ func (o *toolSearchOrchestrator) handleNonStreaming(ctx context.Context, w http.
 		apiResp, err := o.service.client.GenerateAssistantResponse(ctx, o.creds.AccessToken, payload, o.creds.Region)
 		if err != nil {
 			logUpstreamError(ctx, short, err, "round", round+1)
-			httpx.WriteError(w, http.StatusBadGateway, errTypeAPI, "upstream API error")
+			writeFinalJSONError(w, upstreamCallError(err, "upstream API error"))
 			return ""
 		}
 

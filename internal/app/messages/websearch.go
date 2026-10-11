@@ -85,7 +85,7 @@ func (s *Service) runWebSearch(ctx context.Context, w http.ResponseWriter, req *
 	result, err := s.webSearchClient.SearchWeb(ctx, creds.AccessToken, creds.ProfileARN, creds.Region, query)
 	if err != nil {
 		logUpstreamError(ctx, short, err, "operation", "web_search")
-		httpx.WriteError(w, http.StatusBadGateway, errTypeAPI, "Kiro web search failed")
+		writeFinalJSONError(w, upstreamCallError(err, "Kiro web search failed"))
 		return
 	}
 
@@ -106,7 +106,7 @@ func (s *Service) runStreamingWebSearch(ctx context.Context, w http.ResponseWrit
 	result, err := s.webSearchClient.SearchWeb(session.Context(), creds.AccessToken, creds.ProfileARN, creds.Region, query)
 	if err != nil {
 		logUpstreamError(ctx, short, err, "operation", "web_search")
-		_ = session.WriteFinalError(newStreamFinalError(http.StatusBadGateway, errTypeAPI, "Kiro web search failed"), nil)
+		_ = session.WriteFinalError(upstreamCallError(err, "Kiro web search failed"), nil)
 		return
 	}
 

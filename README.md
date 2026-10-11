@@ -87,7 +87,10 @@ export KIRO_API_REGION=us-east-1
 The launcher reuses a healthy gateway at `CLAUDE_KIRO_URL` (default
 `http://127.0.0.1:3457`); otherwise it starts one for the lifetime of the
 session. It sets `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN`, and
-`ANTHROPIC_MODEL` (default `claude-opus-5-5` when unset), and strips proxy
+`ANTHROPIC_MODEL` (default `claude-opus-5-5` when unset),
+`ANTHROPIC_DEFAULT_HAIKU_MODEL` (background tasks; default `claude-sonnet-5-5`),
+and `DISABLE_AUTOUPDATER=1` so the isolated profile never updates the official
+runtime. It strips proxy
 variables from the Claude process unless `CLAUDE_KIRO_PRESERVE_PROXY=1`.
 The profile ships [`config/CLAUDE.md`](config/CLAUDE.md) and
 [`config/settings.json`](config/settings.json) as defaults.
@@ -154,8 +157,10 @@ Model names are mapped to Kiro IDs in
 
 ## Known limitations
 
-- Upstream errors are currently all returned as HTTP 502, so client-side
-  rate-limit and prompt-too-long handling does not trigger.
+- Kiro throttling and unavailability are returned as `429 rate_limit_error`
+  and `529 overloaded_error`, and context overflow as Anthropic's
+  `prompt is too long` error so Claude Code retries and auto-compacts. Other
+  upstream failures are returned as HTTP 502.
 - `count_tokens` is a local approximation, not Kiro's count.
 - Model availability, quota, and billing are enforced by Kiro; this gateway does
   not change them.

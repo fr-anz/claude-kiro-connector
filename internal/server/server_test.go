@@ -500,3 +500,61 @@ func TestIsLocalhostOrigin(t *testing.T) {
 		})
 	}
 }
+
+func TestPostMessages_ContextOverflow_ReturnsPromptTooLong(t *testing.T) {
+	p, _ := json.Marshal(map[string]string{"reason": "CONTENT_LENGTH_EXCEEDS_THRESHOLD", "message": "Too long"})
+	calls := 0
+	client := &mockKiroClient{handler: func(ctx context.Context, token string, payload *kiroproto.Payload, region string) (*kiroclient.Response, error) {
+		calls++
+		return &kiroclient.Response{StatusCode: 200, Body: buildEventStream("invalidStateEvent", p), Header: http.Header{}, PromptTokens: 1_250_000}, nil
+	}}
+
+	srv := newTestServer(t, "", client)
+	defer srv.Close()
+
+	for _, stream := range []string{"true", "false"} {
+		resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":`+stream+`}`)
+		body, _ := io.ReadAll(resp.Body)
+		_ = resp.Body.Close()
+		if resp.StatusCode != http.StatusBadRequest {
+			t.Fatalf("stream=%s status = %d, want 400, body = %s", stream, resp.StatusCode, body)
+		}
+		// Claude Code matches this wording to trigger reactive auto-compaction.
+		if !strings.Contains(string(body), `"invalid_request_error"`) || !strings.Contains(string(body), "prompt is too long: 1250000 tokens > 1000000 maximum") {
+			t.Fatalf("stream=%s body = %s", stream, body)
+		}
+	}
+	if calls != 4 {
+		t.Fatalf("upstream calls = %d, want 4 (one conversation-reset retry per request)", calls)
+	}
+}
+
+func TestPostMessages_UpstreamThrottling_Returns429(t *testing.T) {
+	tests := []struct {
+		name       string
+		err        error
+		wantStatus int
+		wantType   string
+	}{
+		{"throttling", &kiroclient.UpstreamError{Status: 400, Exception: "ThrottlingException"}, http.StatusTooManyRequests, "rate_limit_error"},
+		{"overloaded", &kiroclient.UpstreamError{Status: 503}, 529, "overloaded_error"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := &mockKiroClient{handler: func(ctx context.Context, token string, payload *kiroproto.Payload, region string) (*kiroclient.Response, error) {
+				return nil, tt.err
+			}}
+			srv := newTestServer(t, "", client)
+			defer srv.Close()
+
+			for _, stream := range []string{"true", "false"} {
+				resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":`+stream+`}`)
+				body, _ := io.ReadAll(resp.Body)
+				_ = resp.Body.Close()
+				if resp.StatusCode != tt.wantStatus || !strings.Contains(string(body), `"`+tt.wantType+`"`) {
+					t.Fatalf("stream=%s status = %d body = %s, want %d %s", stream, resp.StatusCode, body, tt.wantStatus, tt.wantType)
+				}
+			}
+		})
+	}
+}
