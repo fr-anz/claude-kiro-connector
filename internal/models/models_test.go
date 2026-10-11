@@ -1,0 +1,526 @@
+package models
+
+import (
+	"slices"
+	"testing"
+)
+
+func TestResolve(t *testing.T) {
+	tests := []struct {
+		name               string
+		envMappings        string // KIROCC_MODEL_MAPPINGS value; empty = unset
+		model              string
+		context1M          bool
+		wantKiroModel      string
+		wantThinking       bool
+		wantContextWindow  int
+		wantAnthropicModel string
+	}{
+		{
+			name:               "claude-sonnet-5-5 uses 1m context without thinking",
+			model:              "claude-sonnet-5-5",
+			wantKiroModel:      "claude-sonnet-5.5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-5-5[1m]",
+		},
+		{
+			name:               "claude-sonnet-5-5[1m] exact-match preserves suffix without thinking",
+			model:              "claude-sonnet-5-5[1m]",
+			wantKiroModel:      "claude-sonnet-5.5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-5-5[1m]",
+		},
+		{
+			name:               "claude-sonnet-5.5 Kiro ID maps to Anthropic form",
+			model:              "claude-sonnet-5.5",
+			wantKiroModel:      "claude-sonnet-5.5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-5-5[1m]",
+		},
+		{
+			name:               "claude-sonnet-5.5[1m] Kiro-style context alias without thinking",
+			model:              "claude-sonnet-5.5[1m]",
+			wantKiroModel:      "claude-sonnet-5.5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-5-5[1m]",
+		},
+		{
+			name:               "claude-sonnet-5-5[1m] with context1M enables thinking",
+			model:              "claude-sonnet-5-5[1m]",
+			context1M:          true,
+			wantKiroModel:      "claude-sonnet-5.5",
+			wantThinking:       true,
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-5-5[1m]",
+		},
+		{
+			name:               "dated haiku snapshot resolves to its alias",
+			model:              "claude-haiku-4-5-20251001",
+			wantKiroModel:      "claude-haiku-4.5",
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-haiku-4-5",
+		},
+		{
+			name:               "dated snapshot keeps [1m] context alias",
+			model:              "claude-sonnet-4-6-20260101[1M]",
+			wantKiroModel:      "claude-sonnet-4.6",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-6[1m]",
+		},
+		{
+			name:               "dated unknown claude model passes through without date",
+			model:              "claude-future-9-20990101",
+			wantKiroModel:      "claude-future-9",
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-future-9",
+		},
+		{
+			name:               "claude-sonnet-4-5 maps to dotted Kiro SKU",
+			model:              "claude-sonnet-4-5",
+			wantKiroModel:      "claude-sonnet-4.5",
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-5",
+		},
+		{
+			name:               "claude-sonnet-4.5[1m] no longer routes to retired -1m SKU",
+			model:              "claude-sonnet-4.5[1m]",
+			wantKiroModel:      "claude-sonnet-4.5",
+			wantThinking:       true,
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-5",
+		},
+		{
+			name:               "claude-opus-4-5 maps to dotted Kiro SKU",
+			model:              "claude-opus-4-5",
+			wantKiroModel:      "claude-opus-4.5",
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-5",
+		},
+		{
+			name:               "non-date numeric tail is not stripped",
+			model:              "claude-opus-4-6-123",
+			wantKiroModel:      "claude-opus-4-6-123",
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-6-123",
+		},
+		{
+			name:               "claude-opus-5-5 uses 1m context without thinking",
+			model:              "claude-opus-5-5",
+			wantKiroModel:      "claude-opus-5.5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-5-5[1m]",
+		},
+		{
+			name:               "claude-opus-5-5[1m] exact-match preserves suffix without thinking",
+			model:              "claude-opus-5-5[1m]",
+			wantKiroModel:      "claude-opus-5.5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-5-5[1m]",
+		},
+		{
+			name:               "claude-opus-5-5 uppercase [1M] is normalized without thinking",
+			model:              "claude-opus-5-5[1M]",
+			wantKiroModel:      "claude-opus-5.5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-5-5[1m]",
+		},
+		{
+			name:               "claude-opus-5.5 Kiro ID maps to Anthropic form",
+			model:              "claude-opus-5.5",
+			wantKiroModel:      "claude-opus-5.5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-5-5[1m]",
+		},
+		{
+			name:               "claude-opus-5.5[1m] Kiro-style context alias without thinking",
+			model:              "claude-opus-5.5[1m]",
+			wantKiroModel:      "claude-opus-5.5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-5-5[1m]",
+		},
+		{
+			name:               "claude-opus-5-5[1m] with context1M enables thinking",
+			model:              "claude-opus-5-5[1m]",
+			context1M:          true,
+			wantKiroModel:      "claude-opus-5.5",
+			wantThinking:       true,
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-5-5[1m]",
+		},
+		{
+			name:               "claude-opus-5 uses 1m context without thinking",
+			model:              "claude-opus-5",
+			wantKiroModel:      "claude-opus-5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-5[1m]",
+		},
+		{
+			name:               "claude-opus-5[1m] exact-match preserves suffix without thinking",
+			model:              "claude-opus-5[1m]",
+			wantKiroModel:      "claude-opus-5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-5[1m]",
+		},
+		{
+			name:               "claude-opus-5 uppercase [1M] is normalized without thinking",
+			model:              "claude-opus-5[1M]",
+			wantKiroModel:      "claude-opus-5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-5[1m]",
+		},
+		{
+			name:               "claude-opus-5 with context1M enables thinking",
+			model:              "claude-opus-5",
+			context1M:          true,
+			wantKiroModel:      "claude-opus-5",
+			wantThinking:       true,
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-5[1m]",
+		},
+		{
+			name:               "claude-opus-4-8 uses 1m context without thinking",
+			model:              "claude-opus-4-8",
+			wantKiroModel:      "claude-opus-4.8",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-8[1m]",
+		},
+		{
+			name:               "claude-opus-4-8[1m] exact-match preserves suffix without thinking",
+			model:              "claude-opus-4-8[1m]",
+			wantKiroModel:      "claude-opus-4.8",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-8[1m]",
+		},
+		{
+			name:               "claude-opus-4-8 with context1M",
+			model:              "claude-opus-4-8",
+			context1M:          true,
+			wantKiroModel:      "claude-opus-4.8",
+			wantThinking:       true,
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-8[1m]",
+		},
+		{
+			name:               "kiro model name claude-opus-4.8 always resolves to 1m",
+			model:              "claude-opus-4.8[1m]",
+			wantKiroModel:      "claude-opus-4.8",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-8[1m]",
+		},
+		{
+			name:               "kiro model name claude-opus-4.8 accepts uppercase 1M suffix",
+			model:              "claude-opus-4.8[1M]",
+			wantKiroModel:      "claude-opus-4.8",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-8[1m]",
+		},
+		{
+			name:               "claude-opus-4-7 uses 1m context without thinking",
+			model:              "claude-opus-4-7",
+			wantKiroModel:      "claude-opus-4.7",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-7[1m]",
+		},
+		{
+			name:               "claude-opus-4-7[1m] exact-match preserves suffix without thinking",
+			model:              "claude-opus-4-7[1m]",
+			wantKiroModel:      "claude-opus-4.7",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-7[1m]",
+		},
+		{
+			name:               "claude-opus-4-7 with context1M",
+			model:              "claude-opus-4-7",
+			context1M:          true,
+			wantKiroModel:      "claude-opus-4.7",
+			wantThinking:       true,
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-7[1m]",
+		},
+		{
+			name:               "kiro model name claude-opus-4.7 always resolves to 1m",
+			model:              "claude-opus-4.7[1m]",
+			wantKiroModel:      "claude-opus-4.7",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-7[1m]",
+		},
+		{
+			name:               "claude-opus-4-6 uses 1m context without thinking",
+			model:              "claude-opus-4-6",
+			wantKiroModel:      "claude-opus-4.6",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-6[1m]",
+		},
+		{
+			name:               "claude-opus-4-6[1m] exact-match preserves suffix without thinking",
+			model:              "claude-opus-4-6[1m]",
+			wantKiroModel:      "claude-opus-4.6",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-6[1m]",
+		},
+		{
+			name:               "claude-opus-4-6 with context1M",
+			model:              "claude-opus-4-6",
+			context1M:          true,
+			wantKiroModel:      "claude-opus-4.6",
+			wantThinking:       true,
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-6[1m]",
+		},
+		{
+			name:               "claude-sonnet-5 always resolves to 1m without thinking",
+			model:              "claude-sonnet-5",
+			wantKiroModel:      "claude-sonnet-5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-5[1m]",
+		},
+		{
+			name:               "claude-sonnet-5[1m] exact-match preserves suffix without thinking",
+			model:              "claude-sonnet-5[1m]",
+			wantKiroModel:      "claude-sonnet-5",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-5[1m]",
+		},
+		{
+			name:               "claude-sonnet-5 with context1M enables thinking",
+			model:              "claude-sonnet-5",
+			context1M:          true,
+			wantKiroModel:      "claude-sonnet-5",
+			wantThinking:       true,
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-5[1m]",
+		},
+		{
+			name:               "claude-sonnet-4-6 is always 1m without thinking",
+			model:              "claude-sonnet-4-6",
+			wantKiroModel:      "claude-sonnet-4.6",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-6[1m]",
+		},
+		{
+			name:               "kiro model name claude-sonnet-4.6 maps to Anthropic form",
+			model:              "claude-sonnet-4.6",
+			wantKiroModel:      "claude-sonnet-4.6",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-6[1m]",
+		},
+		{
+			name:               "claude-sonnet-4-6[1m] is a context alias, not the retired -1m SKU",
+			model:              "claude-sonnet-4-6[1m]",
+			wantKiroModel:      "claude-sonnet-4.6",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-6[1m]",
+		},
+		{
+			name:               "claude-sonnet-4-6 with context1M enables thinking on base SKU",
+			model:              "claude-sonnet-4-6",
+			context1M:          true,
+			wantKiroModel:      "claude-sonnet-4.6",
+			wantThinking:       true,
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-6[1m]",
+		},
+		{
+			name:               "claude-sonnet-4 with thinking suffix passthrough no 1m variant",
+			model:              "claude-sonnet-4[1m]",
+			wantKiroModel:      "claude-sonnet-4",
+			wantThinking:       true,
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4",
+		},
+		{
+			name:               "claude-haiku-4.5",
+			model:              "claude-haiku-4.5",
+			wantKiroModel:      "claude-haiku-4.5",
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-haiku-4-5",
+		},
+		{
+			name:               "claude-haiku-4.5 with thinking suffix no 1m variant",
+			model:              "claude-haiku-4.5[1m]",
+			wantKiroModel:      "claude-haiku-4.5",
+			wantThinking:       true,
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-haiku-4-5",
+		},
+		{
+			name:               "claude-haiku-4.5 with context1M no 1m variant",
+			model:              "claude-haiku-4.5",
+			context1M:          true,
+			wantKiroModel:      "claude-haiku-4.5",
+			wantThinking:       true,
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-haiku-4-5",
+		},
+		{
+			name:               "kiro model name claude-sonnet-4.6[1m] is a context alias",
+			model:              "claude-sonnet-4.6[1m]",
+			wantKiroModel:      "claude-sonnet-4.6",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-6[1m]",
+		},
+		{
+			name:               "kiro model name claude-opus-4.6 with thinking suffix",
+			model:              "claude-opus-4.6[1m]",
+			wantKiroModel:      "claude-opus-4.6",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-opus-4-6[1m]",
+		},
+		{
+			name:               "unknown claude model passthrough",
+			model:              "claude-future-99",
+			wantKiroModel:      "claude-future-99",
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-future-99",
+		},
+		{
+			name:               "unknown claude model with thinking suffix passthrough",
+			model:              "claude-future-99[1m]",
+			wantKiroModel:      "claude-future-99",
+			wantThinking:       true,
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-future-99",
+		},
+		{
+			name:               "non-claude model returns default",
+			model:              "gpt-4o",
+			wantKiroModel:      DefaultModel,
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-6",
+		},
+		{
+			name:               "env override custom model",
+			envMappings:        `[{"anthropic":"my-custom-model","kiro":"claude-custom-1"}]`,
+			model:              "my-custom-model",
+			wantKiroModel:      "claude-custom-1",
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "my-custom-model",
+		},
+		{
+			name:               "env override invalid JSON falls back",
+			envMappings:        `not-valid-json`,
+			model:              "claude-sonnet-4-6",
+			wantKiroModel:      "claude-sonnet-4.6",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-6[1m]",
+		},
+		{
+			name:               "env override with empty anthropic does not poison non-claude fallback",
+			envMappings:        `[{"anthropic":"","kiro":"claude-sonnet-4.6"}]`,
+			model:              "gpt-4o",
+			wantKiroModel:      DefaultModel,
+			wantContextWindow:  DefaultContextWindowSize,
+			wantAnthropicModel: "claude-sonnet-4-6",
+		},
+		{
+			name:               "env override with already-suffixed anthropic does not double-suffix at 1m",
+			envMappings:        `[{"anthropic":"custom-1m[1m]","kiro":"claude-custom-1m","kiro_1m":"claude-custom-1m"}]`,
+			model:              "claude-custom-1m",
+			wantKiroModel:      "claude-custom-1m",
+			wantContextWindow:  ThinkingContextWindowSize,
+			wantAnthropicModel: "custom-1m[1m]",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.envMappings != "" {
+				t.Setenv("KIROCC_MODEL_MAPPINGS", tt.envMappings)
+			}
+			gotModel, gotThinking, gotWindow, gotAnthropic := Resolve(tt.model, tt.context1M)
+			if gotModel != tt.wantKiroModel {
+				t.Errorf("Resolve(%q) kiroModel = %q, want %q", tt.model, gotModel, tt.wantKiroModel)
+			}
+			if gotThinking != tt.wantThinking {
+				t.Errorf("Resolve(%q) thinking = %v, want %v", tt.model, gotThinking, tt.wantThinking)
+			}
+			if gotWindow != tt.wantContextWindow {
+				t.Errorf("Resolve(%q) contextWindowSize = %d, want %d", tt.model, gotWindow, tt.wantContextWindow)
+			}
+			if gotAnthropic != tt.wantAnthropicModel {
+				t.Errorf("Resolve(%q) anthropicModel = %q, want %q", tt.model, gotAnthropic, tt.wantAnthropicModel)
+			}
+		})
+	}
+}
+
+func TestListModels(t *testing.T) {
+	tests := []struct {
+		name        string
+		envMappings string
+		checkModel  string // if set, verify this model is in the list
+	}{
+		{
+			name:       "default models are deduplicated and contain DefaultModel",
+			checkModel: DefaultModel,
+		},
+		{
+			name:       "claude-sonnet-5 is listed exactly once (both alias rows dedupe to one Kiro value)",
+			checkModel: "claude-sonnet-5",
+		},
+		{
+			name:       "claude-sonnet-5.5 is listed exactly once (both alias rows dedupe to one Kiro value)",
+			checkModel: "claude-sonnet-5.5",
+		},
+		{
+			name:       "claude-opus-5.5 is listed exactly once (both alias rows dedupe to one Kiro value)",
+			checkModel: "claude-opus-5.5",
+		},
+		{
+			name:       "claude-opus-5 is listed exactly once (both alias rows dedupe to one Kiro value)",
+			checkModel: "claude-opus-5",
+		},
+		{
+			name:        "env override model included",
+			envMappings: `[{"anthropic":"extra-model","kiro":"claude-extra-1"}]`,
+			checkModel:  "claude-extra-1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.envMappings != "" {
+				t.Setenv("KIROCC_MODEL_MAPPINGS", tt.envMappings)
+			} else {
+				t.Setenv("KIROCC_MODEL_MAPPINGS", "")
+			}
+
+			result := ListModels()
+			if len(result) == 0 {
+				t.Fatal("ListModels returned empty slice")
+			}
+
+			// Check deduplication
+			seen := make(map[string]bool)
+			for _, m := range result {
+				if seen[m] {
+					t.Errorf("ListModels returned duplicate: %q", m)
+				}
+				seen[m] = true
+			}
+
+			for _, retired := range []string{"claude-sonnet-4.6-1m", "claude-sonnet-4.5-1m"} {
+				if slices.Contains(result, retired) {
+					t.Errorf("ListModels advertises retired SKU %q", retired)
+				}
+			}
+
+			if tt.checkModel != "" && !slices.Contains(result, tt.checkModel) {
+				t.Errorf("ListModels missing expected model %q", tt.checkModel)
+			}
+		})
+	}
+}
+
+func TestMapping_FieldNames(t *testing.T) {
+	m := Mapping{Anthropic: "claude-test", Kiro: "claude-test-kiro", Kiro1M: "claude-test-kiro-1m", ContextWindowSize: 100_000}
+	if m.Anthropic != "claude-test" {
+		t.Errorf("Anthropic = %q, want %q", m.Anthropic, "claude-test")
+	}
+	if m.Kiro != "claude-test-kiro" {
+		t.Errorf("Kiro = %q, want %q", m.Kiro, "claude-test-kiro")
+	}
+	if m.Kiro1M != "claude-test-kiro-1m" {
+		t.Errorf("Kiro1M = %q, want %q", m.Kiro1M, "claude-test-kiro-1m")
+	}
+}

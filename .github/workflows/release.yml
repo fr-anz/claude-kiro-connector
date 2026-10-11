@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  GOEXPERIMENT: jsonv2
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: go mod tidy
+        run: go mod tidy && git diff --exit-code
+      - name: go fix
+        run: go fix ./... && git diff --exit-code
+      - name: Validate integration files
+        run: |
+          bash -n scripts/install.sh scripts/uninstall.sh scripts/doctor.sh
+          ./scripts/doctor.sh --help >/dev/null
+          python3 -m json.tool config/settings.json >/dev/null
+      - uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.12.2
+      - name: Run tests
+        run: go test -race ./...
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Validate and test Windows support
+        shell: pwsh
+        run: |
+          $files = @(
+            "scripts/install.ps1",
+            "scripts/doctor.ps1",
+            "scripts/uninstall.ps1",
+            "scripts/windows/claude-kiro.ps1"
+          )
+          foreach ($file in $files) {
+            [scriptblock]::Create((Get-Content $file -Raw)) | Out-Null
+          }
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1 -Help
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\doctor.ps1 -Help
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\uninstall.ps1 -Help
+          go test ./...
+      - name: Smoke-test Windows install
+        shell: pwsh
+        run: |
+          $smokeRoot = Join-Path $env:RUNNER_TEMP "claude-kiro-smoke"
+          $fakeBin = Join-Path $smokeRoot "fake-bin"
+          $userBin = Join-Path $smokeRoot "user-bin"
+          $installRoot = Join-Path $smokeRoot "install\claude-kiro"
+          $stateRoot = Join-Path $smokeRoot "state\.claude-kiro"
+          New-Item -ItemType Directory -Force -Path $fakeBin | Out-Null
+          Set-Content -Path (Join-Path $fakeBin "claude.cmd") -Encoding ASCII -Value "@echo off`r`nexit /b 0"
+          $env:PATH = "$fakeBin;$env:PATH"
+          $env:CLAUDE_KIRO_INSTALL_ROOT = $installRoot
+          $env:CLAUDE_KIRO_STATE_ROOT = $stateRoot
+          $env:CLAUDE_KIRO_BIN_DIR = $userBin
+          $env:KIROCC_PORT = "45678"
+          $env:KIRO_API_KEY = "ksk_ci_placeholder"
+          $env:KIRO_API_REGION = "us-east-1"
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\install.ps1
+          if ($LASTEXITCODE -ne 0) { throw "Windows PowerShell installer failed" }
+          $env:PATH = "$userBin;$env:PATH"
+          & (Join-Path $userBin "claude-kiro.cmd") --version
+          if ($LASTEXITCODE -ne 0) { throw "default Windows launcher failed" }
+
+  release:
+    needs: [ci, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - uses: goreleaser/goreleaser-action@v7
+        with:
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
