@@ -162,6 +162,7 @@ func newKeepAliveServer(client kiroclient.Client, interval time.Duration) *Serve
 func startStreamingHandler(t *testing.T, srv *Server, body string) (*streamingRecorder, <-chan struct{}) {
 	t.Helper()
 	req := httptest.NewRequest(http.MethodPost, "/v1/messages", strings.NewReader(body))
+	req.Host = "localhost"
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Claude-Code-Session-Id", "keepalive-test-session")
 	w := newStreamingRecorder()

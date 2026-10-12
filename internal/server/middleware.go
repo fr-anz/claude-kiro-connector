@@ -2,6 +2,7 @@ package server
 
 import (
 	"crypto/subtle"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -26,6 +27,11 @@ func traceMiddleware(next http.Handler) http.Handler {
 func (s *Server) authMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if s.apiKey == "" {
+			u, err := url.Parse("//" + r.Host)
+			if err != nil || u.User != nil || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || !isLoopbackHost(u.Hostname()) {
+				httpx.WriteError(w, http.StatusForbidden, httpx.ErrTypeInvalidRequest, "unauthenticated gateway requires a loopback Host")
+				return
+			}
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -47,6 +53,10 @@ func (s *Server) authMiddleware(next http.Handler) http.Handler {
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
+		if origin != "" && !isLocalhostOrigin(origin) {
+			httpx.WriteError(w, http.StatusForbidden, httpx.ErrTypeInvalidRequest, "browser origin must be localhost")
+			return
+		}
 		if isLocalhostOrigin(origin) {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -68,13 +78,20 @@ func isLocalhostOrigin(origin string) bool {
 		return false
 	}
 	u, err := url.Parse(origin)
-	if err != nil || u.Scheme == "" || u.Host == "" {
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
 		return false
 	}
 	// Reject origins with userinfo or path components that could be spoofed.
-	if u.User != nil || (u.Path != "" && u.Path != "/") {
+	if u.User != nil || (u.Path != "" && u.Path != "/") || u.RawQuery != "" || u.Fragment != "" {
 		return false
 	}
-	host := u.Hostname()
-	return host == "localhost" || host == "127.0.0.1" || host == "::1"
+	return isLoopbackHost(u.Hostname())
+}
+
+func isLoopbackHost(host string) bool {
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }

@@ -169,6 +169,8 @@ Model names are mapped to Kiro IDs in
 
 Messages require a nonempty `model`, a positive `max_tokens`, and `user` or
 `assistant` message roles. `count_tokens` does not require an output budget.
+Without a local API key, the gateway accepts loopback Host names only. Remote
+access requires `-api-key`; browser origins are restricted to HTTP(S) localhost.
 
 - Kiro throttling and unavailability are returned as `429 rate_limit_error`
   and `529 overloaded_error`, and context overflow as Anthropic's
