@@ -9,24 +9,12 @@ import (
 const encodingName = "cl100k_base"
 
 var (
-	enc  *tiktoken.Tiktoken
-	mu   sync.Mutex
-	once sync.Once
+	enc *tiktoken.Tiktoken
+	mu  sync.Mutex
 )
 
 func getEncoding() (*tiktoken.Tiktoken, error) {
-	// Fast path: already initialized successfully.
-	once.Do(func() {
-		e, err := tiktoken.GetEncoding(encodingName)
-		if err == nil {
-			enc = e
-		}
-	})
-	if enc != nil {
-		return enc, nil
-	}
-
-	// Slow path: first init failed, retry under mutex.
+	// Initialization and retries publish the encoder under the same lock.
 	mu.Lock()
 	defer mu.Unlock()
 	if enc != nil {
