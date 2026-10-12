@@ -112,14 +112,6 @@ func (a *responseAccumulator) processToolUseEvent(e kiroproto.Event, d *EventDel
 	if mapped, ok := a.toolNameMap[toolName]; ok {
 		toolName = mapped
 	}
-	// Skip recording filtered tools (e.g. internal ToolSearch).
-	if a.DropToolName != "" && e.ToolName == a.DropToolName {
-		d.ToolStop = true
-		d.ToolUseID = e.ToolUseID
-		d.ToolName = toolName
-		d.ToolInput = e.ToolInput
-		return
-	}
 	// Tool JSON is atomic: withhold it when the complete call cannot fit.
 	budgetText := a.outputBudgetText.String() + toolName + e.ToolInput
 	tokens, countErr := tokencount.CountBytes([]byte(budgetText))
@@ -129,15 +121,6 @@ func (a *responseAccumulator) processToolUseEvent(e kiroproto.Event, d *EventDel
 		d.StopSignal = true
 		d.StopReason = a.StopReason
 		return
-	}
-	a.HasToolUse = true
-	tc := ToolCall{
-		ID:    e.ToolUseID,
-		Name:  toolName,
-		Input: e.ToolInput,
-	}
-	if !jsontext.Value(tc.Input).IsValid() {
-		a.ToolParseError = true
 	}
 	// Count tool input runes toward budget and enforce max_tokens.
 	// Unlike text/thinking, tool input JSON cannot be truncated mid-stream
@@ -155,7 +138,6 @@ func (a *responseAccumulator) processToolUseEvent(e kiroproto.Event, d *EventDel
 		a.LocalStop = true
 		a.StopReason = StopReasonMaxTokens
 	}
-	a.ToolCalls = append(a.ToolCalls, tc)
 	d.ToolStop = true
 	d.ToolUseID = e.ToolUseID
 	d.ToolName = toolName
@@ -164,4 +146,14 @@ func (a *responseAccumulator) processToolUseEvent(e kiroproto.Event, d *EventDel
 		d.StopSignal = true
 		d.StopReason = a.StopReason
 	}
+	// Server-side search calls consume output budget but are emitted separately.
+	if a.DropToolName != "" && e.ToolName == a.DropToolName {
+		return
+	}
+	a.HasToolUse = true
+	tc := ToolCall{ID: e.ToolUseID, Name: toolName, Input: e.ToolInput}
+	if !jsontext.Value(tc.Input).IsValid() {
+		a.ToolParseError = true
+	}
+	a.ToolCalls = append(a.ToolCalls, tc)
 }

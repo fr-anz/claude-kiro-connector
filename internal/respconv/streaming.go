@@ -30,6 +30,8 @@ type SSEWriter struct {
 	// the buffered writer to direct mode.
 	OnVisibleOutput func() error
 	visibleFired    bool
+	usageBaseInput  int
+	usageBaseOutput int
 }
 
 // NewSSEWriter creates a new SSEWriter and sets response headers.
@@ -183,6 +185,7 @@ func (s *SSEWriter) Finish() error {
 	s.ensureStarted()
 
 	textDelta, thinkingDelta, res := finalizeResult(&s.acc)
+	res.Usage = s.acc.UsageMap(res.InputTokens+s.usageBaseInput, res.OutputTokens+s.usageBaseOutput)
 	if thinkingDelta != "" {
 		s.writeThinkingDelta(EventDelta{ThinkingDelta: thinkingDelta})
 	}
@@ -320,9 +323,23 @@ func (s *SSEWriter) Credits() (float64, bool) { return s.acc.Credits, s.acc.HasC
 // upstream tool-use frame is detected, so cumulative stats remain accurate.
 func (s *SSEWriter) RecordTail(e kiroproto.Event) {
 	switch e.Type {
-	case kiroproto.EventMetering, kiroproto.EventContextUsage:
+	case kiroproto.EventMetering, kiroproto.EventMetadata, kiroproto.EventContextUsage:
 		s.acc.ProcessEvent(e)
 	}
+}
+
+// SetUsageBase carries completed tool-search rounds into the final SSE usage.
+func (s *SSEWriter) SetUsageBase(input, output int) {
+	s.usageBaseInput, s.usageBaseOutput = input, output
+}
+
+// RecordToolSearch charges the intercepted server call without emitting a client tool.
+func (s *SSEWriter) RecordToolSearch(e kiroproto.Event) bool { return s.acc.ProcessEvent(e).ToolStop }
+
+func (s *SSEWriter) StopForBudget() error {
+	s.acc.LocalStop = true
+	s.acc.StopReason = StopReasonMaxTokens
+	return s.Finish()
 }
 
 // writeThinkingDelta writes a thinking_delta SSE event using direct formatting.

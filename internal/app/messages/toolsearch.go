@@ -88,6 +88,20 @@ func (o *toolSearchOrchestrator) handleStreaming(ctx context.Context, session *s
 	var totals roundTotals
 
 	for round := range maxToolSearchRounds {
+		if round > 0 {
+			in, out := sw.Usage()
+			credits, hasCredits := sw.Credits()
+			totals.addCompleted(in, out, credits, hasCredits)
+		}
+		remaining := max(0, o.req.MaxTokens-totals.outputTokens)
+		sw.SetUsageBase(totals.inputTokens, totals.outputTokens)
+		if o.req.MaxTokens > 0 && remaining == 0 {
+			sw.ResetAccumulator(o.contextWindowSize, o.req.StopSequences, 0, 0)
+			if err := sw.StopForBudget(); err == nil {
+				_ = session.Promote()
+			}
+			return ""
+		}
 		payload, nameMap, err := o.buildPayload(msgs)
 		if err != nil {
 			slog.WarnContext(ctx, "tool search payload build error", "trace_id", short, "err", err)
@@ -110,13 +124,7 @@ func (o *toolSearchOrchestrator) handleStreaming(ctx context.Context, session *s
 		}
 		session.Start()
 
-		if round > 0 {
-			// Accumulate usage from previous round before resetting.
-			in, out := sw.Usage()
-			credits, hasCredits := sw.Credits()
-			totals.addCompleted(in, out, credits, hasCredits)
-			sw.ResetAccumulator(o.contextWindowSize, o.req.StopSequences, o.req.MaxTokens, 0)
-		}
+		sw.ResetAccumulator(o.contextWindowSize, o.req.StopSequences, remaining, apiResp.PromptTokens)
 		sw.SetDropToolName(toolsearch.KiroToolSearchName)
 
 		var foundToolSearch bool
@@ -149,6 +157,11 @@ func (o *toolSearchOrchestrator) handleStreaming(ctx context.Context, session *s
 				return true
 			}
 			if e.Type == kiroproto.EventToolUse && e.ToolStop && e.ToolName == toolsearch.KiroToolSearchName {
+				if !sw.RecordToolSearch(e) || sw.LocalStop() {
+					localStop = true
+					_ = sw.StopForBudget()
+					return true
+				}
 				foundToolSearch = true
 				toolSearchInput = e.ToolInput
 				return false
@@ -284,6 +297,12 @@ func (o *toolSearchOrchestrator) handleNonStreaming(ctx context.Context, w http.
 	var normalExit bool
 
 	for round := range maxToolSearchRounds {
+		remaining := max(0, o.req.MaxTokens-totals.outputTokens)
+		if o.req.MaxTokens > 0 && remaining == 0 {
+			lastStopReason = respconv.StopReasonMaxTokens
+			normalExit = true
+			break
+		}
 		payload, nameMap, err := o.buildPayload(msgs)
 		if err != nil {
 			httpx.WriteError(w, http.StatusBadRequest, errTypeInvalidRequest, err.Error())
@@ -297,7 +316,7 @@ func (o *toolSearchOrchestrator) handleNonStreaming(ctx context.Context, w http.
 			return ""
 		}
 
-		acc := respconv.NewNonStreamingAccumulator(o.contextWindowSize, o.req.StopSequences, o.req.MaxTokens, 0)
+		acc := respconv.NewNonStreamingAccumulator(o.contextWindowSize, o.req.StopSequences, remaining, apiResp.PromptTokens)
 		acc.SetDropToolName(toolsearch.KiroToolSearchName)
 		acc.SetToolNameMap(nameMap.ReverseMap())
 
@@ -314,6 +333,10 @@ func (o *toolSearchOrchestrator) handleNonStreaming(ctx context.Context, w http.
 			if d.ToolStop && d.ToolName == toolsearch.KiroToolSearchName {
 				foundToolSearch = true
 				nsToolSearchInput = d.ToolInput
+			}
+			if d.StopSignal {
+				foundToolSearch = false
+				return true
 			}
 			return false
 		})
