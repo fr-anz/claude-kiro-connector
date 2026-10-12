@@ -137,7 +137,7 @@ func TestCountTokens(t *testing.T) {
 	resp, err := http.Post(
 		srv.URL+"/v1/messages/count_tokens",
 		"application/json",
-		strings.NewReader(`{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hello"}]}`),
+		strings.NewReader(`{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hello"}]}`),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -189,7 +189,7 @@ func TestCountTokens_EmptyMessages(t *testing.T) {
 	defer srv.Close()
 
 	resp, err := http.Post(srv.URL+"/v1/messages/count_tokens", "application/json",
-		strings.NewReader(`{"model":"claude-sonnet-4-6","messages":[]}`))
+		strings.NewReader(`{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[]}`))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -293,7 +293,7 @@ func TestPostMessages_EmptyMessages(t *testing.T) {
 	srv := newTestServer(t, "", nil)
 	defer srv.Close()
 
-	resp, err := http.Post(srv.URL+"/v1/messages", "application/json", strings.NewReader(`{"model":"claude-sonnet-4-6","messages":[]}`))
+	resp, err := http.Post(srv.URL+"/v1/messages", "application/json", strings.NewReader(`{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[]}`))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -312,7 +312,7 @@ func TestPostMessages_AuthError(t *testing.T) {
 	srv := newTCP4TestServer(t, s.Handler())
 	defer srv.Close()
 
-	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}]}`)
+	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}]}`)
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode == 200 {
 		t.Fatal("expected non-200 when auth fails")
@@ -331,7 +331,7 @@ func TestPostMessages_NonStreaming(t *testing.T) {
 	srv := newTestServer(t, "", client)
 	defer srv.Close()
 
-	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":false}`)
+	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":false}`)
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != 200 {
@@ -366,7 +366,7 @@ func TestPostMessages_Streaming(t *testing.T) {
 	srv := newTestServer(t, "", client)
 	defer srv.Close()
 
-	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != 200 {
@@ -402,7 +402,7 @@ func TestPostMessages_InvalidState_PreStream(t *testing.T) {
 	srv := newTestServer(t, "", client)
 	defer srv.Close()
 
-	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != 400 {
@@ -423,7 +423,7 @@ func TestPostMessages_InvalidState_MidStream(t *testing.T) {
 	srv := newTestServer(t, "", client)
 	defer srv.Close()
 
-	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	defer func() { _ = resp.Body.Close() }()
 
 	body, _ := io.ReadAll(resp.Body)
@@ -444,7 +444,7 @@ func TestPostMessages_PayloadPassthrough(t *testing.T) {
 	srv := newTestServer(t, "", client)
 	defer srv.Close()
 
-	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hello"}],"stream":false}`)
+	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hello"}],"stream":false}`)
 	defer func() { _ = resp.Body.Close() }()
 
 	if capturedPayload == nil {
@@ -513,7 +513,7 @@ func TestPostMessages_ContextOverflow_ReturnsPromptTooLong(t *testing.T) {
 	defer srv.Close()
 
 	for _, stream := range []string{"true", "false"} {
-		resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":`+stream+`}`)
+		resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":`+stream+`}`)
 		body, _ := io.ReadAll(resp.Body)
 		_ = resp.Body.Close()
 		if resp.StatusCode != http.StatusBadRequest {
@@ -548,7 +548,7 @@ func TestPostMessages_UpstreamThrottling_Returns429(t *testing.T) {
 			defer srv.Close()
 
 			for _, stream := range []string{"true", "false"} {
-				resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":`+stream+`}`)
+				resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":`+stream+`}`)
 				body, _ := io.ReadAll(resp.Body)
 				_ = resp.Body.Close()
 				if resp.StatusCode != tt.wantStatus || !strings.Contains(string(body), `"`+tt.wantType+`"`) {

@@ -30,7 +30,7 @@ func TestE2E_ImageHistoryAndToolResults(t *testing.T) {
 				if history {
 					messages += `,{"role":"assistant","content":"I will inspect it"},{"role":"user","content":"Describe it again"}`
 				}
-				body := fmt.Sprintf(`{"model":"claude-opus-5-5","stream":%t,"messages":[%s],"tools":[{"name":"Read","input_schema":{"type":"object"}}]}`, stream, messages)
+				body := fmt.Sprintf(`{"model":"claude-opus-5-5","max_tokens":4096,"stream":%t,"messages":[%s],"tools":[{"name":"Read","input_schema":{"type":"object"}}]}`, stream, messages)
 				resp := postMessages(t, srv.URL, body)
 				defer func() { _ = resp.Body.Close() }()
 				requireStatus(t, resp, 200)

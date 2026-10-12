@@ -14,7 +14,7 @@ import (
 const expectedRequestLimit = 32 << 20
 
 func sizedJSONRequest(size int, padding string) io.Reader {
-	const prefix = `{"messages":[{"role":"user","content":"`
+	const prefix = `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"`
 	const suffix = `"}]}`
 	return io.MultiReader(strings.NewReader(prefix), strings.NewReader(padding[:size-len(prefix)-len(suffix)]), strings.NewReader(suffix))
 }

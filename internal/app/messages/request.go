@@ -3,7 +3,6 @@ package messages
 // Modified by ClaudeCode Kiro to count native WebSearch requests safely.
 
 import (
-	"bytes"
 	"context"
 	"encoding/json/jsontext"
 	"encoding/json/v2"
@@ -11,6 +10,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/fr-anz/claude-kiro-connector/internal/anthropic"
 	"github.com/fr-anz/claude-kiro-connector/internal/httpx"
@@ -92,7 +92,7 @@ func parseAndValidateRequest(ctx context.Context, w http.ResponseWriter, r *http
 			return nil, fmt.Errorf("invalid request: %w", err)
 		}
 		slog.DebugContext(ctx, "client request body", "request_body", jsontext.Value(raw))
-		if err := json.UnmarshalDecode(jsontext.NewDecoder(bytes.NewReader(raw)), &req); err != nil {
+		if err := json.Unmarshal(raw, &req); err != nil {
 			return nil, fmt.Errorf("invalid request: %w", err)
 		}
 	} else {
@@ -102,6 +102,17 @@ func parseAndValidateRequest(ctx context.Context, w http.ResponseWriter, r *http
 	}
 	if len(req.Messages) == 0 {
 		return nil, fmt.Errorf("messages must not be empty")
+	}
+	if strings.TrimSpace(req.Model) == "" {
+		return nil, fmt.Errorf("model must not be empty")
+	}
+	if req.MaxTokens < 0 || (r.URL.Path != "/v1/messages/count_tokens" && req.MaxTokens == 0) {
+		return nil, fmt.Errorf("max_tokens must be positive for messages and nonnegative for count_tokens")
+	}
+	for i, message := range req.Messages {
+		if message.Role != "user" && message.Role != "assistant" {
+			return nil, fmt.Errorf("messages[%d].role must be user or assistant", i)
+		}
 	}
 	return &req, nil
 }

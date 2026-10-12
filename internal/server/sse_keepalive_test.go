@@ -222,7 +222,7 @@ func writeUpstreamEvents(t *testing.T, w *io.PipeWriter, events ...any) {
 func TestSSEKeepAlive_StalledFirstFrameThenSuccess(t *testing.T) {
 	client := newKeepAliveScriptClient(nil)
 	srv := newKeepAliveServer(client, 10*time.Millisecond)
-	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	upstream := awaitPendingStream(t, client.pending)
 	t.Cleanup(func() { _ = upstream.writer.Close() })
 
@@ -245,7 +245,7 @@ func TestSSEKeepAlive_StalledFirstFrameThenSuccess(t *testing.T) {
 func TestSSEKeepAlive_FinalErrorAfterCommitIsSSE(t *testing.T) {
 	client := newKeepAliveScriptClient(nil)
 	srv := newKeepAliveServer(client, 10*time.Millisecond)
-	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	upstream := awaitPendingStream(t, client.pending)
 	t.Cleanup(func() { _ = upstream.writer.Close() })
 	_ = awaitBodyContains(t, w, ": keep-alive\n\n")
@@ -274,7 +274,7 @@ func TestSSEKeepAlive_FinalErrorAfterPromotionClosesActiveBlock(t *testing.T) {
 	}
 	client := newKeepAliveScriptClient(events)
 	srv := newKeepAliveServer(client, 10*time.Millisecond)
-	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	awaitHandlerDone(t, done)
 	status, body := w.snapshot()
 	if status != http.StatusOK {
@@ -292,7 +292,7 @@ func TestSSEKeepAlive_FinalErrorAfterPromotionClosesActiveBlock(t *testing.T) {
 
 func TestSSEKeepAlive_FinalErrorBeforeCommitIsNon200JSON(t *testing.T) {
 	srv := newKeepAliveServer(&errorClient{err: errors.New("upstream unavailable")}, 10*time.Millisecond)
-	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	awaitHandlerDone(t, done)
 	status, body := w.snapshot()
 	if status != http.StatusBadGateway {
@@ -309,7 +309,7 @@ func TestSSEKeepAlive_FinalErrorBeforeCommitIsNon200JSON(t *testing.T) {
 func TestSSEKeepAlive_DisabledDoesNotWriteWhileStalled(t *testing.T) {
 	client := newKeepAliveScriptClient(nil)
 	srv := newKeepAliveServer(client, 0)
-	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	upstream := awaitPendingStream(t, client.pending)
 	t.Cleanup(func() { _ = upstream.writer.Close() })
 
@@ -336,7 +336,7 @@ func TestSSEKeepAlive_TransparentRetryAfterCommit(t *testing.T) {
 	normal := []any{"assistantResponseEvent", mustJSON(map[string]string{"content": "retry answer"})}
 	client := newKeepAliveScriptClient(nil, normal)
 	srv := newKeepAliveServer(client, 10*time.Millisecond)
-	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	upstream := awaitPendingStream(t, client.pending)
 	t.Cleanup(func() { _ = upstream.writer.Close() })
 	_ = awaitBodyContains(t, w, ": keep-alive\n\n")
@@ -362,7 +362,7 @@ func TestSSEKeepAlive_RetryHTTPFailureAfterCommitIsSSE(t *testing.T) {
 		err:     errors.New("second upstream call failed"),
 	}
 	srv := newKeepAliveServer(client, 10*time.Millisecond)
-	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	w, done := startStreamingHandler(t, srv, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	upstream := awaitPendingStream(t, client.pending)
 	t.Cleanup(func() { _ = upstream.writer.Close() })
 	_ = awaitBodyContains(t, w, ": keep-alive\n\n")

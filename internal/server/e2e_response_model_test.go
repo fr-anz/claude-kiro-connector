@@ -154,7 +154,7 @@ func TestE2E_ResponseModel_NonStreaming(t *testing.T) {
 			srv := newE2EServer(t, client)
 			defer srv.Close()
 
-			body := `{"model":"` + tt.requestModel + `","messages":[{"role":"user","content":"hi"}],"stream":false}`
+			body := `{"model":"` + tt.requestModel + `","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":false}`
 			resp := postMessages(t, srv.URL, body)
 			defer func() { _ = resp.Body.Close() }()
 
@@ -252,7 +252,7 @@ func TestE2E_ResponseModel_Streaming(t *testing.T) {
 			srv := newE2EServer(t, client)
 			defer srv.Close()
 
-			body := `{"model":"` + tt.requestModel + `","messages":[{"role":"user","content":"hi"}],"stream":true}`
+			body := `{"model":"` + tt.requestModel + `","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`
 			resp := postMessages(t, srv.URL, body)
 			defer func() { _ = resp.Body.Close() }()
 

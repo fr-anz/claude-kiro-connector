@@ -19,7 +19,7 @@ func TestE2E_ToolUseFlow(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[
 			{"role":"user","content":"What is the weather?"},
 			{"role":"assistant","content":[{"type":"tool_use","id":"tool_1","name":"get_weather","input":{"city":"Tokyo"}}]},
@@ -54,7 +54,7 @@ func TestE2E_ToolResultOnly(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[
 			{"role":"user","content":"hello"},
 			{"role":"assistant","content":"I will help"}
@@ -81,7 +81,7 @@ func TestE2E_EffortNative_NoXMLInjection(t *testing.T) {
 	defer srv.Close()
 
 	// opus-4.8 supports effort; output_config.effort travels natively.
-	resp := postMessages(t, srv.URL, `{"model":"claude-opus-4-8","messages":[{"role":"user","content":"think about this"}],"output_config":{"effort":"xhigh"},"stream":false}`)
+	resp := postMessages(t, srv.URL, `{"model":"claude-opus-4-8","max_tokens":4096,"messages":[{"role":"user","content":"think about this"}],"output_config":{"effort":"xhigh"},"stream":false}`)
 	defer func() { _ = resp.Body.Close() }()
 
 	requireStatus(t, resp, 200)
@@ -117,7 +117,7 @@ func TestE2E_ThinkingWithoutEffort_SendsDefaultEffort(t *testing.T) {
 	defer srv.Close()
 
 	// thinking.type=enabled on an effort-capable model, no explicit effort.
-	resp := postMessages(t, srv.URL, `{"model":"claude-opus-4-8","messages":[{"role":"user","content":"hi"}],"thinking":{"type":"enabled","budget_tokens":1024},"stream":false}`)
+	resp := postMessages(t, srv.URL, `{"model":"claude-opus-4-8","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"thinking":{"type":"enabled","budget_tokens":1024},"stream":false}`)
 	defer func() { _ = resp.Body.Close() }()
 
 	requireStatus(t, resp, 200)
@@ -163,7 +163,7 @@ func TestE2E_EffortPerModel(t *testing.T) {
 			srv := newE2EServer(t, client)
 			defer srv.Close()
 
-			body := `{"model":"` + tt.model + `","messages":[{"role":"user","content":"hi"}],"output_config":{"effort":"xhigh"},"stream":false}`
+			body := `{"model":"` + tt.model + `","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"output_config":{"effort":"xhigh"},"stream":false}`
 			resp := postMessages(t, srv.URL, body)
 			defer func() { _ = resp.Body.Close() }()
 
@@ -199,7 +199,7 @@ func TestE2E_EnvStateFromSystemPrompt(t *testing.T) {
 
 	// System prompt carries a Claude Code <env> block.
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"system":"You are Claude Code.\n<env>\nWorking directory: /tmp/proj\nPlatform: darwin\n</env>",
 		"messages":[{"role":"user","content":"hi"}],
 		"stream":false
@@ -230,7 +230,7 @@ func TestE2E_ThinkingMode_Native(t *testing.T) {
 	srv := newE2EServer(t, client)
 	defer srv.Close()
 
-	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"hi"}],"stream":true}`)
+	resp := postMessages(t, srv.URL, `{"model":"claude-sonnet-4-6","max_tokens":4096,"messages":[{"role":"user","content":"hi"}],"stream":true}`)
 	defer func() { _ = resp.Body.Close() }()
 
 	body, _ := io.ReadAll(resp.Body)
@@ -254,7 +254,7 @@ func TestE2E_SystemPromptPlacement(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"system":"You are helpful.",
 		"messages":[
 			{"role":"user","content":"first"},
@@ -297,7 +297,7 @@ func TestE2E_SystemPromptArray_CacheControl(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"system":[{"type":"text","text":"System A","cache_control":{"type":"ephemeral"}},{"type":"text","text":"System B"}],
 		"messages":[{"role":"user","content":"hi"}],
 		"stream":false
@@ -326,7 +326,7 @@ func TestE2E_MultiTurnConversation(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[
 			{"role":"user","content":"turn 1"},
 			{"role":"assistant","content":"reply 1"},
@@ -359,7 +359,7 @@ func TestE2E_ImageInput(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[{"role":"user","content":[
 			{"type":"image","source":{"type":"base64","media_type":"image/png","data":"iVBOR"}},
 			{"type":"text","text":"describe this"}
@@ -389,7 +389,7 @@ func TestE2E_ImageURL_Skip(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[{"role":"user","content":[
 			{"type":"image","source":{"type":"url","url":"https://example.com/img.png"}},
 			{"type":"text","text":"describe"}
@@ -416,7 +416,7 @@ func TestE2E_CacheControl(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[
 			{"role":"user","content":[{"type":"text","text":"cached msg","cache_control":{"type":"ephemeral"}}]},
 			{"role":"assistant","content":"reply"},
@@ -456,7 +456,7 @@ func TestE2E_LongToolDescription(t *testing.T) {
 
 	longDesc := strings.Repeat("x", 50001)
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[{"role":"user","content":"hi"}],
 		"tools":[{"name":"big_tool","description":"` + longDesc + `","input_schema":{"type":"object"}}],
 		"stream":false
@@ -484,7 +484,7 @@ func TestE2E_SchemaSanitization(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[{"role":"user","content":"hi"}],
 		"tools":[{"name":"my_tool","description":"A tool","input_schema":{"type":"object","properties":{"x":{"type":"string"}},"additionalProperties":false}}],
 		"stream":false
@@ -517,7 +517,7 @@ func TestE2E_ToolNameShortening(t *testing.T) {
 
 	longName := strings.Repeat("a", 65)
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[{"role":"user","content":"hi"}],
 		"tools":[{"name":"` + longName + `","description":"A tool","input_schema":{"type":"object"}}],
 		"stream":false
@@ -545,7 +545,7 @@ func TestE2E_MessageNormalization(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[
 			{"role":"user","content":"msg1"},
 			{"role":"user","content":"msg2"},
@@ -580,7 +580,7 @@ func TestE2E_ToolReferenceBlockSkipped(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[{"role":"user","content":[
 			{"type":"tool_reference","tool_name":"Bash"},
 			{"type":"text","text":"use this tool"}
@@ -610,7 +610,7 @@ func TestE2E_UnknownContentBlock(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[{"role":"user","content":[
 			{"type":"future_block"},
 			{"type":"text","text":"hello"}
@@ -637,7 +637,7 @@ func TestE2E_KiroConstraints(t *testing.T) {
 	defer srv.Close()
 
 	reqBody := `{
-		"model":"claude-sonnet-4-6",
+		"model":"claude-sonnet-4-6","max_tokens":4096,
 		"messages":[
 			{"role":"assistant","content":"I start"},
 			{"role":"user","content":"hello"}

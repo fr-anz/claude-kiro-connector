@@ -167,6 +167,9 @@ Model names are mapped to Kiro IDs in
 
 ## Known limitations
 
+Messages require a nonempty `model`, a positive `max_tokens`, and `user` or
+`assistant` message roles. `count_tokens` does not require an output budget.
+
 - Kiro throttling and unavailability are returned as `429 rate_limit_error`
   and `529 overloaded_error`, and context overflow as Anthropic's
   `prompt is too long` error so Claude Code retries and auto-compacts. Other
