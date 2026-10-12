@@ -62,7 +62,21 @@ func SanitizeJSONSchema(schema map[string]any) map[string]any {
 			result[key] = value
 		case "anyOf", "oneOf", "allOf":
 			// Handled in second pass.
-		default:
+		case "properties":
+			if properties, ok := value.(map[string]any); ok {
+				converted := make(map[string]any, len(properties))
+				for name, property := range properties {
+					if child, ok := property.(map[string]any); ok {
+						converted[name] = SanitizeJSONSchema(child)
+					} else {
+						converted[name] = property
+					}
+				}
+				result[key] = converted
+			} else {
+				result[key] = value
+			}
+		case "items", "contains":
 			switch v := value.(type) {
 			case map[string]any:
 				result[key] = SanitizeJSONSchema(v)
@@ -79,6 +93,9 @@ func SanitizeJSONSchema(schema map[string]any) map[string]any {
 			default:
 				result[key] = value
 			}
+		default:
+			// Enum values and annotations are data, not schema nodes.
+			result[key] = value
 		}
 	}
 

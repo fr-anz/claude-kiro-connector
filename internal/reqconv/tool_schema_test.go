@@ -31,6 +31,43 @@ func TestConvertTools_Basic(t *testing.T) {
 	}
 }
 
+func TestConvertTools_PreservesPropertyNamesAndEnumData(t *testing.T) {
+	schema := map[string]any{
+		"type": "object",
+		"properties": map[string]any{
+			"pattern": map[string]any{"type": "string", "pattern": "x"},
+			"format": map[string]any{"type": "object", "properties": map[string]any{
+				"default": map[string]any{"type": "string"},
+			}},
+			"items": map[string]any{"type": "array", "items": map[string]any{
+				"type": "object", "properties": map[string]any{"minimum": map[string]any{"type": "number"}},
+			}},
+		},
+		"required": []any{"pattern", "format"},
+		"enum":     []any{map[string]any{"pattern": "literal", "format": "literal"}},
+	}
+	got := ConvertTools([]anthropic.Tool{{Name: "Search", InputSchema: schema}}, nil)[0].ToolSpecification.InputSchema.JSON
+	props := got["properties"].(map[string]any)
+	if len(props) != 3 {
+		t.Fatalf("argument names lost: %v", props)
+	}
+	if _, exists := props["pattern"].(map[string]any)["pattern"]; exists {
+		t.Fatal("schema keyword not stripped")
+	}
+	nested := props["format"].(map[string]any)["properties"].(map[string]any)
+	if nested["default"] == nil {
+		t.Fatal("nested argument name lost")
+	}
+	items := props["items"].(map[string]any)["items"].(map[string]any)["properties"].(map[string]any)
+	if items["minimum"] == nil {
+		t.Fatal("array argument name lost")
+	}
+	literal := got["enum"].([]any)[0].(map[string]any)
+	if literal["pattern"] != "literal" || literal["format"] != "literal" {
+		t.Fatal("enum data changed")
+	}
+}
+
 func TestConvertTools_EmptyDescription(t *testing.T) {
 	tools := []anthropic.Tool{{Name: "my_tool", InputSchema: map[string]any{}}}
 	entries := ConvertTools(tools, nil)
