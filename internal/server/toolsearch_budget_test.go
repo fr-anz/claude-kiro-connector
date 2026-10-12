@@ -38,7 +38,7 @@ func TestToolSearch_CumulativeBudgetAndPromptUsage(t *testing.T) {
 			data, _ := io.ReadAll(resp.Body)
 			var result map[string]any
 			if stream {
-				for _, line := range strings.Split(string(data), "\n") {
+				for line := range strings.SplitSeq(string(data), "\n") {
 					if strings.HasPrefix(line, "data: ") && strings.Contains(line, `"type":"message_delta"`) {
 						if err := json.Unmarshal([]byte(strings.TrimPrefix(line, "data: ")), &result); err != nil {
 							t.Fatal(err)
