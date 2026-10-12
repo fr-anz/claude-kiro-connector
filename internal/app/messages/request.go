@@ -65,7 +65,7 @@ func (s *Service) HandleCountTokens(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	n, err := tokencount.CountBytes(data)
+	n, err := tokencount.CountPromptBytes(data)
 	if err != nil {
 		httpx.WriteError(w, http.StatusInternalServerError, errTypeAPI, "token counting unavailable")
 		return

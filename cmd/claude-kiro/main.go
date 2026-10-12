@@ -132,7 +132,7 @@ func parseFlags(args []string) (config.Config, error) {
 
 func buildKiroClient(authMgr *auth.AuthManager, cfg config.Config) kiroclient.Client {
 	clientOpts := []kiroclient.HTTPClientOption{
-		kiroclient.WithTokenCounter(tokencount.CountBytes),
+		kiroclient.WithTokenCounter(tokencount.CountPromptBytes),
 	}
 	if authMgr.UsesAPIKey() {
 		clientOpts = append(clientOpts, kiroclient.WithAPIKeyAuth())
