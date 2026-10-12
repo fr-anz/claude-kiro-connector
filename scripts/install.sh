@@ -139,6 +139,7 @@ set -euo pipefail
 gateway_bin="\${CLAUDE_KIRO_BIN:-$install_root/bin/claude-kiro-native-websearch}"
 runtime_bin="\${CLAUDE_KIRO_RUNTIME_BIN:-$official_claude_real}"
 config_dir="\${CLAUDE_KIRO_CONFIG_DIR:-$state_root/claude-config}"
+export CLAUDE_KIRO_AUTH_CACHE="\${CLAUDE_KIRO_AUTH_CACHE:-$state_root/auth-cache.json}"
 gateway_port="\${CLAUDE_KIRO_PORT:-$gateway_port}"
 gateway_url="\${CLAUDE_KIRO_URL:-http://127.0.0.1:\${gateway_port}}"
 proxy_token="\${CLAUDE_KIRO_API_KEY:-dummy}"

@@ -51,6 +51,10 @@ This repository contains two things:
 
 Kiro CLI is not a traffic proxy. It only creates the login database; the gateway
 calls Kiro directly and refreshes tokens itself.
+Refreshed OAuth tokens are cached separately in `~/.claude-kiro/auth-cache.json`
+(the managed state root when overridden), so refresh-token rotation survives
+gateway restarts. The Kiro database stays read-only. Treat this cache as a secret;
+API keys are never cached. Use `-auth-cache ""` to disable persistence.
 
 ## Install the managed launcher
 
@@ -138,6 +142,7 @@ Every flag has an environment equivalent; run `claude-kiro -h` for the full list
 | --- | --- | --- |
 | `-host` / `-port` | `CLAUDE_KIRO_HOST` / `CLAUDE_KIRO_PORT` | `127.0.0.1` / `3456` |
 | `-db` | `CLAUDE_KIRO_DB_PATH` | Kiro CLI default path |
+| `-auth-cache` | `CLAUDE_KIRO_AUTH_CACHE` | `~/.claude-kiro/auth-cache.json` |
 | `-api-key` | `CLAUDE_KIRO_API_KEY` | none (local gateway auth, `Authorization: Bearer`) |
 | `-kiro-api-key` | `KIRO_API_KEY` | none (use DB credential) |
 | `-kiro-api-region` | `KIRO_API_REGION` | credential region |

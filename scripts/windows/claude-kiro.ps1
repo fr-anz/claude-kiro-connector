@@ -37,6 +37,9 @@ $configDir = if ($env:CLAUDE_KIRO_CONFIG_DIR) {
 } else {
     Join-Path $stateRoot "claude-config"
 }
+if (-not $env:CLAUDE_KIRO_AUTH_CACHE) {
+    $env:CLAUDE_KIRO_AUTH_CACHE = Join-Path $stateRoot "auth-cache.json"
+}
 $gatewayBin = if ($env:CLAUDE_KIRO_BIN) {
     $env:CLAUDE_KIRO_BIN
 } else {

@@ -21,10 +21,11 @@ const (
 
 // Config is the runtime configuration for claude-kiro.
 type Config struct {
-	Port   int
-	Host   string
-	DBPath string
-	APIKey string // guards claude-kiro's own endpoints; unrelated to KiroAPIKey
+	Port          int
+	Host          string
+	DBPath        string
+	AuthCachePath string
+	APIKey        string // guards claude-kiro's own endpoints; unrelated to KiroAPIKey
 	// KiroAPIKey is a Kiro API key ("ksk_…") used upstream instead of the
 	// kiro-cli database credential. Named after Kiro's own KIRO_API_KEY rather
 	// than the CLAUDE_KIRO_* convention, since it is Kiro's credential, not claude-kiro's.
@@ -52,6 +53,14 @@ func DefaultDBPath() string {
 	return DefaultDBPathFor(runtime.GOOS, home)
 }
 
+func DefaultAuthCachePath() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(home, ".claude-kiro", "auth-cache.json")
+}
+
 // DefaultDBPathFor returns the default database location for the given OS and home directory.
 func DefaultDBPathFor(goos, home string) string {
 	switch goos {
@@ -70,6 +79,7 @@ func DefaultDBPathFor(goos, home string) string {
 // ApplyEnvOverrides mutates cfg using CLAUDE_KIRO_* environment variables.
 func ApplyEnvOverrides(cfg *Config) error {
 	applyString("CLAUDE_KIRO_DB_PATH", &cfg.DBPath)
+	applyString("CLAUDE_KIRO_AUTH_CACHE", &cfg.AuthCachePath)
 	applyString("CLAUDE_KIRO_API_KEY", &cfg.APIKey)
 	// Kiro's own variable names, so a machine already set up for headless
 	// kiro-cli needs no claude-kiro-specific configuration.

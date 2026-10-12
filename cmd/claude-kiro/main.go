@@ -61,7 +61,7 @@ func run(ctx context.Context, args []string) error {
 		slog.Info("OpenTelemetry tracing enabled", "body_limit", cfg.OTelBodyLimit)
 	}
 
-	authMgr := auth.NewAuthManager(cfg.DBPath, auth.WithAPIKey(cfg.KiroAPIKey, cfg.KiroAPIRegion))
+	authMgr := auth.NewAuthManager(cfg.DBPath, auth.WithAPIKey(cfg.KiroAPIKey, cfg.KiroAPIRegion), auth.WithCredentialCache(cfg.AuthCachePath))
 	if authMgr.UsesAPIKey() {
 		// Say so up front: with a key there is no database read and no refresh,
 		// so the usual "credentials loaded" line never appears and its absence
@@ -110,6 +110,7 @@ func parseFlags(args []string) (config.Config, error) {
 	fs.IntVar(&cfg.Port, "port", 3456, "listen port")
 	fs.StringVar(&cfg.Host, "host", "127.0.0.1", "bind host")
 	fs.StringVar(&cfg.DBPath, "db", config.DefaultDBPath(), "kiro-cli SQLite DB path")
+	fs.StringVar(&cfg.AuthCachePath, "auth-cache", config.DefaultAuthCachePath(), "gateway-owned OAuth token cache path (empty disables persistence)")
 	fs.StringVar(&cfg.APIKey, "api-key", "", "optional API key for authentication")
 	fs.StringVar(&cfg.KiroAPIKey, "kiro-api-key", "", "Kiro API key (ksk_...) to use instead of the kiro-cli database credential; also KIRO_API_KEY")
 	fs.StringVar(&cfg.KiroAPIRegion, "kiro-api-region", "", "region for Kiro API endpoints; overrides the credential region; also KIRO_API_REGION")

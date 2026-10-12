@@ -58,6 +58,8 @@ type AuthManager struct {
 	mu               sync.Mutex
 	cached           *Credentials
 	forceRefresh     bool
+	cachePath        string
+	sourceID         string
 	refreshGroup     singleflight.Group
 	oidcEndpointFn   func(ssoRegion string) string
 	socialEndpointFn func(region string) string
@@ -177,6 +179,7 @@ func (m *AuthManager) refreshCredentials(ctx context.Context) (*Credentials, err
 		if err != nil {
 			return nil, err
 		}
+		creds = m.loadCredentialCache(creds)
 	}
 
 	if isTokenValid(creds.ExpiresAt) && !force {
@@ -225,6 +228,7 @@ func (m *AuthManager) refreshCredentials(ctx context.Context) (*Credentials, err
 	m.cached = refreshed
 	m.forceRefresh = false
 	m.mu.Unlock()
+	m.persistCredentials(refreshed)
 	return refreshed, nil
 }
 
