@@ -132,19 +132,19 @@ func parseFlags(args []string) (config.Config, error) {
 func buildKiroClient(authMgr *auth.AuthManager, cfg config.Config) kiroclient.Client {
 	clientOpts := []kiroclient.HTTPClientOption{
 		kiroclient.WithTokenCounter(tokencount.CountBytes),
-		kiroclient.WithTokenRefresher(func(ctx context.Context) (string, error) {
-			// Invalidate cache so GetToken re-reads from DB and refreshes
-			// instead of returning the same rejected token.
+	}
+	if authMgr.UsesAPIKey() {
+		clientOpts = append(clientOpts, kiroclient.WithAPIKeyAuth())
+	} else {
+		clientOpts = append(clientOpts, kiroclient.WithTokenRefresher(func(ctx context.Context) (string, error) {
+			// Force refresh even when the rejected access token has not expired.
 			authMgr.InvalidateCache()
 			creds, err := authMgr.GetToken(ctx)
 			if err != nil {
 				return "", err
 			}
 			return creds.AccessToken, nil
-		}),
-	}
-	if authMgr.UsesAPIKey() {
-		clientOpts = append(clientOpts, kiroclient.WithAPIKeyAuth())
+		}))
 	}
 	if cfg.KiroAPIRegion != "" {
 		clientOpts = append(clientOpts, kiroclient.WithRegion(cfg.KiroAPIRegion))

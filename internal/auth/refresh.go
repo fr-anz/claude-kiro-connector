@@ -57,6 +57,7 @@ type AuthManager struct {
 	httpClient       *http.Client
 	mu               sync.Mutex
 	cached           *Credentials
+	forceRefresh     bool
 	refreshGroup     singleflight.Group
 	oidcEndpointFn   func(ssoRegion string) string
 	socialEndpointFn func(region string) string
@@ -122,7 +123,7 @@ func (m *AuthManager) GetToken(ctx context.Context) (*Credentials, error) {
 
 	m.mu.Lock()
 	// Return cached credentials if still valid (copy to prevent external mutation).
-	if m.cached != nil && isTokenValid(m.cached.ExpiresAt) {
+	if m.cached != nil && isTokenValid(m.cached.ExpiresAt) && !m.forceRefresh {
 		c := *m.cached
 		m.mu.Unlock()
 		return &c, nil
@@ -146,12 +147,11 @@ func (m *AuthManager) GetToken(ctx context.Context) (*Credentials, error) {
 	return &creds, nil
 }
 
-// InvalidateCache clears the cached credentials, forcing the next GetToken call
-// to re-read from DB and potentially refresh. Used when a 403 indicates the
-// cached token is rejected by the upstream API.
+// InvalidateCache forces a refresh while retaining the latest rotated refresh
+// token. A rejected access token must not be reloaded merely because it has not expired.
 func (m *AuthManager) InvalidateCache() {
 	m.mu.Lock()
-	m.cached = nil
+	m.forceRefresh = true
 	m.mu.Unlock()
 }
 
@@ -159,19 +159,27 @@ func (m *AuthManager) InvalidateCache() {
 func (m *AuthManager) refreshCredentials(ctx context.Context) (*Credentials, error) {
 	// Re-check cache under lock — another goroutine may have refreshed while we waited.
 	m.mu.Lock()
-	if m.cached != nil && isTokenValid(m.cached.ExpiresAt) {
+	force := m.forceRefresh
+	var creds *Credentials
+	if m.cached != nil {
 		c := *m.cached
-		m.mu.Unlock()
-		return &c, nil
+		creds = &c
+		if isTokenValid(c.ExpiresAt) && !force {
+			m.mu.Unlock()
+			return &c, nil
+		}
 	}
 	m.mu.Unlock()
 
-	creds, err := m.readFromDB()
-	if err != nil {
-		return nil, err
+	var err error
+	if creds == nil || creds.RefreshToken == "" {
+		creds, err = m.readFromDB()
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	if isTokenValid(creds.ExpiresAt) {
+	if isTokenValid(creds.ExpiresAt) && !force {
 		slog.Info("credentials loaded", "auth_type", creds.AuthType, "region", creds.Region)
 		m.mu.Lock()
 		m.cached = creds
@@ -215,6 +223,7 @@ func (m *AuthManager) refreshCredentials(ctx context.Context) (*Credentials, err
 
 	m.mu.Lock()
 	m.cached = refreshed
+	m.forceRefresh = false
 	m.mu.Unlock()
 	return refreshed, nil
 }
