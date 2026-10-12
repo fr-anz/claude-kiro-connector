@@ -1,15 +1,45 @@
 package respconv
 
-import "unicode/utf8"
+import (
+	"math"
+	"strings"
+	"unicode/utf8"
+
+	"github.com/fr-anz/claude-kiro-connector/internal/tokencount"
+)
 
 // applyMaxTokensBudget checks whether adding delta would exceed the max_tokens budget.
-// Uses cumulative rune count / 4 as a token estimate. Returns the (possibly truncated) delta.
+// Uses the same tokenizer as fallback usage. Rune estimation is only a fallback
+// when tokenizer initialization is unavailable.
 // If the budget is exceeded, sets LocalStop and StopReason.
 func (a *responseAccumulator) applyMaxTokensBudget(delta string) string {
 	if a.maxTokensBudget <= 0 {
 		a.outputRuneCount += utf8.RuneCountInString(delta)
 		return delta
 	}
+	previous := a.outputBudgetText.String()
+	combined := previous + delta
+	prefix, n, err := tokencount.LimitText(combined, a.maxTokensBudget)
+	if err != nil {
+		out := a.applyRuneBudget(delta)
+		a.outputBudgetText.WriteString(out)
+		return out
+	}
+	if !strings.HasPrefix(prefix, previous) {
+		prefix = previous
+	}
+	out := prefix[len(previous):]
+	a.outputBudgetText.WriteString(out)
+	a.outputRuneCount += utf8.RuneCountInString(out)
+	a.outputTokenCount = n
+	if prefix != combined || n >= a.maxTokensBudget {
+		a.LocalStop = true
+		a.StopReason = StopReasonMaxTokens
+	}
+	return out
+}
+
+func (a *responseAccumulator) applyRuneBudget(delta string) string {
 	runesInDelta := utf8.RuneCountInString(delta)
 	newTotal := a.outputRuneCount + runesInDelta
 	if newTotal/4 < a.maxTokensBudget {
@@ -18,7 +48,11 @@ func (a *responseAccumulator) applyMaxTokensBudget(delta string) string {
 	}
 	// Budget exceeded — find the cutoff point.
 	// Allow up to (maxTokensBudget * 4 - outputRuneCount) more runes.
-	remaining := a.maxTokensBudget*4 - a.outputRuneCount
+	maxRunes := math.MaxInt
+	if a.maxTokensBudget <= math.MaxInt/4 {
+		maxRunes = a.maxTokensBudget * 4
+	}
+	remaining := maxRunes - a.outputRuneCount
 	if remaining <= 0 {
 		a.LocalStop = true
 		a.StopReason = StopReasonMaxTokens

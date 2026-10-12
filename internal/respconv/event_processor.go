@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/fr-anz/claude-kiro-connector/internal/kiroproto"
+	"github.com/fr-anz/claude-kiro-connector/internal/tokencount"
 )
 
 // ProcessEvent processes a single Kiro event and returns the delta for this event.
@@ -119,6 +120,16 @@ func (a *responseAccumulator) processToolUseEvent(e kiroproto.Event, d *EventDel
 		d.ToolInput = e.ToolInput
 		return
 	}
+	// Tool JSON is atomic: withhold it when the complete call cannot fit.
+	budgetText := a.outputBudgetText.String() + toolName + e.ToolInput
+	tokens, countErr := tokencount.CountBytes([]byte(budgetText))
+	if a.maxTokensBudget > 0 && ((countErr == nil && tokens > a.maxTokensBudget) || (countErr != nil && (float64(a.outputRuneCount)+float64(utf8.RuneCountInString(e.ToolInput)))/4 > float64(a.maxTokensBudget))) {
+		a.LocalStop = true
+		a.StopReason = StopReasonMaxTokens
+		d.StopSignal = true
+		d.StopReason = a.StopReason
+		return
+	}
 	a.HasToolUse = true
 	tc := ToolCall{
 		ID:    e.ToolUseID,
@@ -134,7 +145,13 @@ func (a *responseAccumulator) processToolUseEvent(e kiroproto.Event, d *EventDel
 	// of using applyMaxTokensBudget which truncates at a rune boundary.
 	toolRunes := utf8.RuneCountInString(e.ToolInput)
 	a.outputRuneCount += toolRunes
-	if a.maxTokensBudget > 0 && a.outputRuneCount/4 >= a.maxTokensBudget {
+	if a.maxTokensBudget > 0 {
+		a.outputBudgetText.WriteString(toolName + e.ToolInput)
+		if countErr == nil {
+			a.outputTokenCount = tokens
+		}
+	}
+	if a.maxTokensBudget > 0 && ((countErr == nil && tokens >= a.maxTokensBudget) || (countErr != nil && a.outputRuneCount/4 >= a.maxTokensBudget)) {
 		a.LocalStop = true
 		a.StopReason = StopReasonMaxTokens
 	}

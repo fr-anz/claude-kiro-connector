@@ -12,6 +12,9 @@ import (
 // incrementally tracked ~4 runes per token heuristic.
 // Returns at least 1 for non-empty output to avoid reporting 0 tokens for short responses.
 func (a *responseAccumulator) estimatedOutputTokens() int {
+	if a.outputTokenCount > 0 {
+		return a.outputTokenCount
+	}
 	if a.outputRuneCount == 0 {
 		return 0
 	}

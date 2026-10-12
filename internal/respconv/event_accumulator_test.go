@@ -316,12 +316,10 @@ func TestAccumulator_MaxTokens(t *testing.T) {
 		wantReason string
 	}{
 		{
-			name:   "budget reached mid-stream",
-			budget: 2, // 2 tokens = 8 runes
-			// chunk1: "Hello" (5 runes, 5/4=1 token, ok)
-			// chunk2: "Hello world!" (delta=" world!", 7 runes, total=12, 12/4=3 >= 2, stop)
+			name:       "budget reached mid-stream",
+			budget:     2, // "Hello world" is two local tokenizer tokens.
 			chunks:     []string{"Hello", "Hello world!"},
-			wantDeltas: []string{"Hello", " wo"},
+			wantDeltas: []string{"Hello", " world"},
 			wantStop:   true,
 			wantReason: "max_tokens",
 		},
@@ -373,8 +371,8 @@ func TestAccumulator_MaxTokens(t *testing.T) {
 }
 
 func TestAccumulator_MaxTokens_ThinkingCountsTowardBudget(t *testing.T) {
-	acc := responseAccumulator{maxTokensBudget: 2} // 2 tokens = 8 runes
-	// Thinking: "Think!!!" = 8 runes = 2 tokens, exactly at budget.
+	acc := responseAccumulator{maxTokensBudget: 2}
+	// "Think!!!" is two local tokenizer tokens, exactly at budget.
 	d := acc.ProcessEvent(kiroproto.Event{Type: "reasoningContentEvent", ThinkingText: "Think!!!"})
 	if d.ThinkingDelta != "Think!!!" {
 		t.Fatalf("ThinkingDelta = %q", d.ThinkingDelta)

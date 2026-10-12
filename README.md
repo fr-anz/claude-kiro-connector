@@ -185,6 +185,8 @@ access requires `-api-key`; browser origins are restricted to HTTP(S) localhost.
   estimates, not Kiro's count.
   Image base64 is excluded from text tokenization; images use bounded dimension
   estimates based on [Claude's vision documentation](https://platform.claude.com/docs/en/build-with-claude/vision).
+  Output limits use the local tokenizer, with a rune fallback if it is unavailable;
+  a complete tool call that exceeds the remaining budget is withheld.
 - URL-sourced images and documents are not fetched by the gateway.
 - Model availability, quota, and billing are enforced by Kiro; this gateway does
   not change them.

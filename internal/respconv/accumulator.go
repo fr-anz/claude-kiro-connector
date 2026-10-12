@@ -71,8 +71,10 @@ type responseAccumulator struct {
 	// Pre-counted input tokens from tiktoken (set before streaming starts).
 	PreCountedInputTokens int
 	// Max tokens budget enforcement.
-	maxTokensBudget int // 0 = no enforcement
-	outputRuneCount int // cumulative rune count across all output content
+	maxTokensBudget  int // 0 = no enforcement
+	outputRuneCount  int // cumulative rune count across all output content
+	outputBudgetText strings.Builder
+	outputTokenCount int
 	// Thinking tag parser state.
 	thinkingTagInside        bool   // currently inside <thinking> tags
 	thinkingTagBuf           string // buffer for partial tag matching across chunk boundaries
