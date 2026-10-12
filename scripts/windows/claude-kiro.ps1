@@ -215,7 +215,7 @@ try {
                 $ready = $true
                 break
             }
-            if ($startedGateway.HasExited) { break }
+            # A competing launcher may have won the bind; wait for it to become healthy.
             Start-Sleep -Milliseconds 100
         }
         if (-not $ready) {
@@ -233,6 +233,13 @@ try {
             Write-Error "claude-kiro: gateway started but rejected the configured local proxy key"
             exit 1
         }
+        if (-not $startedGateway.HasExited) {
+            New-Item -ItemType Directory -Force -Path $stateRoot | Out-Null
+            Set-Content -LiteralPath (Join-Path $stateRoot "gateway-$gatewayPort.pid") -Encoding ASCII -Value $startedGateway.Id
+        }
+        # The ready gateway is shared; cleanup owns startup failures only.
+        $startedGateway.Dispose()
+        $startedGateway = $null
     }
 
     # The gateway process was started above and already inherited the user's

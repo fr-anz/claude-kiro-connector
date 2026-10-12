@@ -212,7 +212,7 @@ fi
 
 if [[ "\$gateway_is_healthy" != true ]]; then
   prepare_local_kiro_credentials
-  "\$gateway_bin" -port "\$gateway_port" >"\$log_file" 2>&1 &
+  nohup "\$gateway_bin" -port "\$gateway_port" >"\$log_file" 2>&1 </dev/null &
   started_pid=\$!
   ready=false
   for _attempt in {1..50}; do
@@ -220,7 +220,7 @@ if [[ "\$gateway_is_healthy" != true ]]; then
       ready=true
       break
     fi
-    if ! kill -0 "\$started_pid" 2>/dev/null; then break; fi
+    # A competing launcher may have won the bind; wait for its health check too.
     sleep 0.1
   done
   if [[ "\$ready" != true ]]; then
@@ -232,6 +232,12 @@ if [[ "\$gateway_is_healthy" != true ]]; then
     echo "claude-kiro: gateway started but rejected the configured local proxy key" >&2
     exit 1
   fi
+  if kill -0 "\$started_pid" 2>/dev/null; then
+    mkdir -p "$state_root"
+    printf '%s\n' "\$started_pid" > "$state_root/gateway-\${gateway_port}.pid"
+  fi
+  # Successful gateways are shared across sessions; cleanup owns startup failures only.
+  started_pid=""
 fi
 
 runtime_proxy_args=()

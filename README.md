@@ -94,8 +94,13 @@ export KIRO_API_REGION=us-east-1
 | Isolated Claude config | `~/.claude-kiro/claude-config/` | `%USERPROFILE%\.claude-kiro\claude-config\` |
 
 The launcher reuses a healthy gateway at `CLAUDE_KIRO_URL` (default
-`http://127.0.0.1:3457`); otherwise it starts one for the lifetime of the
-session. It sets `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN`, and
+`http://127.0.0.1:3457`); otherwise it starts a shared background gateway that
+continues running when a session exits. Its PID is saved in
+`~/.claude-kiro/gateway-3457.pid` (the managed state root and selected port when
+overridden). Stop it before reinstalling or changing gateway credentials/config:
+`kill "$(cat ~/.claude-kiro/gateway-3457.pid)"` on Unix, or
+`Stop-Process -Id (Get-Content "$HOME\.claude-kiro\gateway-3457.pid")` on Windows.
+It sets `ANTHROPIC_BASE_URL`, `ANTHROPIC_AUTH_TOKEN`, and
 `ANTHROPIC_MODEL` (default `claude-opus-5-5` when unset),
 `ANTHROPIC_DEFAULT_HAIKU_MODEL` (background tasks; default `claude-sonnet-5-5`),
 and `DISABLE_AUTOUPDATER=1` so the isolated profile never updates the official
